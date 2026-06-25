@@ -76,9 +76,9 @@
         link.href = "#";
         if (currentSubtopic === sub.id) link.classList.add("active");
 
-        link.addEventListener("click", (e) => {
+        link.addEventListener("click", async (e) => {
           e.preventDefault();
-          selectSubtopic(sub.id, sub.title);
+          await selectSubtopic(sub.id, sub.title);
           // On mobile: close sidebar after selecting
           if (window.innerWidth <= 768) closeSidebar();
         });
@@ -105,7 +105,7 @@
   // =============================================
   // CONTENT RENDERING
   // =============================================
-  function selectSubtopic(id, title) {
+  async function selectSubtopic(id, title) {
     currentSubtopic = id;
 
     // Update active link
@@ -114,18 +114,37 @@
       .find(l => l.textContent === title);
     if (activeLink) activeLink.classList.add("active");
 
-    renderContent(id);
+    await renderContent(id);
   }
 
-  function renderContent(id) {
-    const page = CONTENT[id];
+  async function renderContent(id) {
+    // Try cached CONTENT first
+    let page = (window.CONTENT && window.CONTENT[id]) ? window.CONTENT[id] : null;
+
+    // If not available, attempt to load a content HTML file from content/<topic>/<id>.html
+    if (!page) {
+      try {
+        const resp = await fetch(`content/${currentTopic}/${id}.html`);
+        if (resp.ok) {
+          const html = await resp.text();
+          // derive title from TOPICS structure
+          const sub = TOPICS[currentTopic].chapters.flatMap(c => c.subtopics).find(s => s.id === id);
+          const title = sub ? sub.title : id;
+          page = { title, topic: TOPICS[currentTopic].label, body: html };
+          window.CONTENT = window.CONTENT || {};
+          window.CONTENT[id] = page;
+        }
+      } catch (err) {
+        console.error('Failed to load content file for', id, err);
+      }
+    }
 
     if (!page) {
       contentInner.innerHTML = `
         <div style="padding:40px 0; color:var(--text-muted); text-align:center;">
           <div style="font-size:48px; margin-bottom:16px;">📄</div>
           <h2 style="color:var(--text-muted); font-size:18px; margin-bottom:8px;">Content coming soon</h2>
-          <p style="font-size:14px;">This page is not yet written. Add it in <code>data.js</code> under the <code>CONTENT</code> object.</p>
+          <p style="font-size:14px;">This page is not yet written. Add it as an HTML file inside the <code>content/${currentTopic}/</code> folder.</p>
         </div>`;
       scrollToTop();
       return;
@@ -151,7 +170,7 @@
 
     // Attach prev/next click handlers
     contentInner.querySelectorAll(".page-nav-btn[data-id]").forEach(btn => {
-      btn.addEventListener("click", (e) => {
+      btn.addEventListener("click", async (e) => {
         e.preventDefault();
         const targetId = btn.dataset.id;
         const targetTitle = btn.querySelector(".nav-title").textContent;
@@ -162,7 +181,7 @@
           openChapters.add(chapter.id);
           renderSidebar();
         }
-        selectSubtopic(targetId, targetTitle);
+        await selectSubtopic(targetId, targetTitle);
         scrollToTop();
       });
     });
@@ -199,7 +218,7 @@
 
     // Click on welcome card → open that chapter
     contentInner.querySelectorAll(".welcome-card").forEach(card => {
-      card.addEventListener("click", () => {
+      card.addEventListener("click", async () => {
         const chId = card.dataset.chapter;
         openChapters.add(chId);
         renderSidebar();
@@ -208,7 +227,7 @@
         const chapter = TOPICS[currentTopic].chapters.find(c => c.id === chId);
         if (chapter && chapter.subtopics.length) {
           const first = chapter.subtopics[0];
-          selectSubtopic(first.id, first.title);
+          await selectSubtopic(first.id, first.title);
         }
       });
     });
@@ -255,7 +274,7 @@
   // =============================================
   // URL HASH NAVIGATION (bookmarkable links)
   // =============================================
-  function applyHash() {
+  async function applyHash() {
     const hash = window.location.hash.slice(1); // e.g. "java/java-arraylist"
     if (!hash) return;
     const [topic, subId] = hash.split("/");
@@ -278,7 +297,7 @@
         const sub = TOPICS[topic].chapters
           .flatMap(c => c.subtopics)
           .find(s => s.id === subId);
-        if (sub) selectSubtopic(sub.id, sub.title);
+        if (sub) await selectSubtopic(sub.id, sub.title);
       } else {
         renderWelcome();
       }

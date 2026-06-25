@@ -1,0 +1,18 @@
+<p class="intro">The <code>SELECT</code> statement is the first command you use when learning SQL. It retrieves rows from one or more tables in a database.</p>
+
+<h2>SELECT Syntax</h2>
+<div class="code-block">
+  <span class="code-label">SQL</span>
+  <pre><code>SELECT column1, column2
+FROM employees
+WHERE department = 'Engineering'
+ORDER BY last_name ASC;
+</code></pre>
+</div>
+
+<h2>Example</h2>
+<p>This query returns employee names and salaries for the Engineering department, sorted by last name.</p>
+
+<div class="note-box">
+  <strong>Note:</strong> Use <code>*</code> to select all columns, but prefer specifying columns for better performance and clarity.
+</div>
