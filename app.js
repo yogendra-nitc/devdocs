@@ -121,18 +121,27 @@
     // Try cached CONTENT first
     let page = (window.CONTENT && window.CONTENT[id]) ? window.CONTENT[id] : null;
 
-    // If not available, attempt to load a content HTML file from content/<topic>/<id>.html
+    // If not available, load from the chapter-based path: /content/{topic}/{chapter}/{subtopic}.html
     if (!page) {
       try {
-        const resp = await fetch(`content/${currentTopic}/${id}.html`);
+        const chapter = findChapterForSubtopic(id);
+        console.log(`[renderContent] Loading content for ${id} (chapter: ${chapter ? chapter.id : 'N/A'})`);
+        const path = chapter
+          ? `content/${currentTopic}/${chapter.id}/${id}.html`
+          : `content/${currentTopic}/${id}.html`;
+
+        console.log(`[renderContent] Fetching: ${path}`);
+        const resp = await fetch(path);
+        console.log(`[renderContent] Status: ${resp.status}`);
+
         if (resp.ok) {
           const html = await resp.text();
-          // derive title from TOPICS structure
           const sub = TOPICS[currentTopic].chapters.flatMap(c => c.subtopics).find(s => s.id === id);
           const title = sub ? sub.title : id;
           page = { title, topic: TOPICS[currentTopic].label, body: html };
           window.CONTENT = window.CONTENT || {};
           window.CONTENT[id] = page;
+          console.log(`[renderContent] ✓ Loaded and cached ${id}`);
         }
       } catch (err) {
         console.error('Failed to load content file for', id, err);
@@ -153,6 +162,7 @@
     // Find prev / next subtopics for navigation
     const { prev, next } = getAdjacentSubtopics(id);
 
+    // const renderedBody = escapeCodeHtml(page.body);
     contentInner.innerHTML = `
       <span class="topic-tag">${page.topic}</span>
       <h1>${page.title}</h1>
@@ -167,6 +177,9 @@
           <span class="nav-title">${next.title}</span>
         </a>` : `<span></span>`}
       </div>`;
+
+    // Auto-escape angle brackets in code blocks after render
+    // escapeCodeBlocks();
 
     // Attach prev/next click handlers
     contentInner.querySelectorAll(".page-nav-btn[data-id]").forEach(btn => {
@@ -254,6 +267,27 @@
 
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function escapeCodeBlocks() {
+    // Find all code blocks and escape angle brackets so <T> displays correctly
+    const codeBlocks = contentInner.querySelectorAll('pre code');
+    codeBlocks.forEach(block => {
+      block.textContent = block.textContent
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    });
+  }
+
+  function escapeCodeHtml(html) {
+    // Escape only content inside <pre><code> tags before injecting HTML.
+    return html.replace(/<pre([^>]*)>\s*<code([^>]*)>([\s\S]*?)<\/code>\s*<\/pre>/gi, (match, preAttrs, codeAttrs, codeContent) => {
+      const escaped = codeContent
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      return `<pre${preAttrs}><code${codeAttrs}>${escaped}</code></pre>`;
+    });
   }
 
   // =============================================

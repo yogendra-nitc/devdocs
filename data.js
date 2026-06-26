@@ -10,64 +10,52 @@ const TOPICS = {
     label: "Java Tutorial",
     chapters: [
       {
-        id: "java-intro",
-        title: "Introduction",
+        id: "java-language-part-1",
+        title: "The Java Language - Part I",
         icon: "☕",
         subtopics: [
-          { id: "java-what-is", title: "What is Java?" },
-          { id: "java-history", title: "History of Java" },
-          { id: "java-setup",  title: "Setup & Installation" },
-          { id: "java-hello",  title: "Hello World" },
+          { id: "java-overview", title: "An Overview of Java"},
+          { id: "java-variables-and-arrays", title: "Data Types, Variables, and Arrays" },
+          { id: "java-operators",  title: "Operators" },
+          { id: "java-control-statements",  title: "Control Statements" },
+          { id: "java-intro-classes",  title: "Introducing Classes" },
+          {id: "java-closer-look-classes",  title: "A Closer Look at Methods and Classes"}
         ]
       },
       {
-        id: "java-basics",
-        title: "Java Basics",
+        id: "java-language-part-2",
+        title: "The Java Language - Part II",
+        icon: "☕",
+        subtopics: [
+          { id: "java-inheritance", title: "Inheritance"},
+          { id: "java-packages-and-interfaces", title: "Packages and Interfaces" },
+          { id: "java-exception-handling",  title: "Exception Handling" },
+          { id: "java-multithreading",  title: "Multithreaded Programming" },
+          { id: "java-enumerations",  title: "Enumerations, Autoboxing, and Annotations" },
+          {id: "java-intro-classes",  title: "A Closer Look at Methods and Classes"}
+        ]
+      },
+      {
+        id: "java-language-part-3",
+        title: "The Java Language - Part III",
+        icon: "☕",
+        subtopics: [
+          { id: "java-try-catch", title: "I/O, Try-with-Resources, and Other Topics"},
+          { id: "java-generics", title: "Generics" },
+          { id: "java-lambda-expressions",  title: "Lambda Expressions" },
+          { id: "java-modules",  title: "Modules" }
+        ]
+      },
+      {
+        id: "java-library",
+        title: "The Java Library",
         icon: "📌",
         subtopics: [
-          { id: "java-syntax",     title: "Syntax & Structure" },
-          { id: "java-variables",  title: "Variables & Data Types" },
-          { id: "java-operators",  title: "Operators" },
-          { id: "java-strings",    title: "Strings" },
-          { id: "java-conditionals", title: "If / Else / Switch" },
-          { id: "java-loops",      title: "Loops" },
-        ]
-      },
-      {
-        id: "java-oop",
-        title: "OOP Concepts",
-        icon: "🧱",
-        subtopics: [
-          { id: "java-classes",       title: "Classes & Objects" },
-          { id: "java-inheritance",   title: "Inheritance" },
-          { id: "java-polymorphism",  title: "Polymorphism" },
-          { id: "java-abstraction",   title: "Abstraction" },
-          { id: "java-encapsulation", title: "Encapsulation" },
-          { id: "java-interfaces",    title: "Interfaces" },
-        ]
-      },
-      {
-        id: "java-collections",
-        title: "Collections",
-        icon: "📦",
-        subtopics: [
-          { id: "java-list",       title: "List" },
-          { id: "java-arraylist",  title: "ArrayList" },
-          { id: "java-linkedlist", title: "LinkedList" },
-          { id: "java-set",        title: "Set & HashSet" },
-          { id: "java-map",        title: "Map & HashMap" },
-          { id: "java-queue",      title: "Queue & Deque" },
-          { id: "java-iterator",   title: "Iterator" },
-        ]
-      },
-      {
-        id: "java-exceptions",
-        title: "Exception Handling",
-        icon: "⚠️",
-        subtopics: [
-          { id: "java-try-catch",  title: "try / catch / finally" },
-          { id: "java-throw",      title: "throw & throws" },
-          { id: "java-custom-ex",  title: "Custom Exceptions" },
+          { id: "java-string-handling",     title: "String Handling" },
+          { id: "java-lang",  title: "Exploring java.lang" },
+          { id: "java-collections-framework",  title: "Part 1: The Collections Framework" },
+          { id: "java-utility-classes",    title: "Part 2: More Utility Classes "},
+          { id: "java-input-output", title: "Input/Output: Exploring java.io" }
         ]
       },
       {
@@ -75,11 +63,33 @@ const TOPICS = {
         title: "Advanced Java",
         icon: "🚀",
         subtopics: [
-          { id: "java-generics",  title: "Generics" },
-          { id: "java-lambda",    title: "Lambda Expressions" },
-          { id: "java-streams",   title: "Streams API" },
-          { id: "java-threads",   title: "Multithreading" },
-          { id: "java-io",        title: "File I/O" },
+          { id: "java-generics-advanced",  title: "Advanced Generics" },
+          { id: "java-lambda-advanced",    title: "Advanced Lambda Expressions" },
+          { id: "java-streams-api",   title: "Streams API" },
+          { id: "java-functional-interfaces",   title: "Functional Interfaces" },
+          { id: "java-optional",        title: "Optional" },
+        ]
+      },
+      {
+        id: "java-interviews",
+        title: "Interview Questions",
+        icon: "💭",
+        subtopics: [
+          { id: "java-interview-1",  title: "Question Set 1" },
+          { id: "java-interview-2",      title: "Question Set 2" },
+          { id: "java-interview-3",  title: "Question Set 3" },
+          { id: "java-interview-4",  title: "Question Set 4" },
+          { id: "java-interview-5",  title: "Question Set 5" },
+        ]
+      },
+      {
+        id: "java-appendixes",
+        title: "Appendixes",
+        icon: "📎",
+        subtopics: [
+          { id: "java-doc-comments",  title: "Using Java’s Documentation Comments" },
+          { id: "java-jshell",        title: "Introducing JShell" },
+          { id: "java-single-file",   title: "Compile and Run Simple Single-File Programs in One Step" }
         ]
       },
     ]
