@@ -1,0 +1,958 @@
+<p class="intro">Interview questions on Collections Interface and related concepts.</p>
+
+<h3>1. What is the Java Collections Framework? What are its main interfaces and how do they relate to each other?</h3>
+The Java Collections Framework (JCF) is a unified architecture for storing and manipulating groups of objects. At the top sits the Iterable interface, which Collection extends. Collection branches into three main sub-interfaces: List (ordered, allows duplicates), Set (no duplicates), and Queue (FIFO or priority ordering). Map is a separate root interface — it stores key-value pairs and does not extend Collection. Understanding this hierarchy helps you pick the right data structure for any problem.
+<br> Hierarchy overview: <br>
+Iterable<br>
+   └── Collection<br>
+         ├── List      → ArrayList, LinkedList, Vector, Stack<br>
+         ├── Set       → HashSet, LinkedHashSet, TreeSet<br>
+         └── Queue     → LinkedList, PriorityQueue, ArrayDeque<br>
+Map (separate root)  → HashMap, LinkedHashMap, TreeMap, Hashtable<br>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Coding to the interface — best practice
+    List<String>   list  = new ArrayList<>();
+    Set<String>    set   = new HashSet<>();
+    Queue<String>  queue = new ArrayDeque<>();
+    Map<String,Integer> map = new HashMap<>();
+
+    // This lets you swap implementations without changing the rest of your code:
+    List<String> linked = new LinkedList<>();  // same interface, different impl
+  </code></pre>
+</div>
+
+<h3>2. What is the difference between Collection and Collections in Java?</h3>
+Collection (singular, no 's') is an interface in java.util — it is the root of most collection types and defines methods like add(), remove(), size(), and iterator(). Collections (with 's') is a utility class full of static helper methods that operate on collection objects. It provides algorithms like sort(), shuffle(), binarySearch(), reverse(), unmodifiableList(), synchronizedList(), frequency(), and disjoint(). Think of it like the difference between a 'List' and a 'Lists helper'.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    import java.util.Collection;
+    import java.util.Collections;
+    import java.util.List;
+    import java.util.ArrayList;
+
+    List<Integer> nums = new ArrayList<>(List.of(3, 1, 4, 1, 5, 9, 2));
+
+    // Collections utility methods
+    Collections.sort(nums);                    // [1,1,2,3,4,5,9]
+    Collections.reverse(nums);                 // [9,5,4,3,2,1,1]
+    Collections.shuffle(nums);                 // random order
+    int max = Collections.max(nums);           // largest element
+    int freq = Collections.frequency(nums, 1); // how many times 1 appears → 2
+
+    // Make a collection read-only
+    List<Integer> readOnly = Collections.unmodifiableList(nums);
+    // readOnly.add(10);  // throws UnsupportedOperationException
+
+    // Thread-safe wrapper
+    List<Integer> syncList = Collections.synchronizedList(new ArrayList<>());
+  </code></pre>
+</div>
+
+
+<h3>3. What is the difference between Comparable and Comparator, and how are they used with collections?</h3>
+Comparable defines the natural ordering of a class — it is implemented by the class itself via compareTo(). It represents the single 'default' sort order. Comparator is an external strategy object that defines an alternative ordering — you pass it to sort methods or sorted(). Use Comparable when the class has one obvious ordering (e.g., String alphabetical, Integer numeric). Use Comparator when you need multiple orderings, or when you cannot modify the class. Collections.sort() and TreeMap/TreeSet both accept either.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Comparable — natural order built into the class
+    class Product implements Comparable<Product> {
+        String name; double price;
+        Product(String name, double price){ this.name=name; this.price=price; }
+
+        @Override
+        public int compareTo(Product other) {
+            return Double.compare(this.price, other.price); // natural = by price
+        }
+        public String toString(){ return name+"("+price+")"; }
+    }
+
+    List<Product> products = new ArrayList<>(List.of(
+        new Product("Pen", 1.5),
+        new Product("Notebook", 3.0),
+        new Product("Bag", 15.0)
+    ));
+
+    Collections.sort(products);           // uses compareTo → price ascending
+    System.out.println(products);        // [Pen(1.5), Notebook(3.0), Bag(15.0)]
+
+    // Comparator — external, flexible
+    Comparator<Product> byName    = Comparator.comparing(p -> p.name);
+    Comparator<Product> byPriceDesc = Comparator.comparingDouble((Product p) -> p.price).reversed();
+
+    products.sort(byName);               // alphabetical
+    products.sort(byPriceDesc);          // price high→low
+
+    // Chaining comparators
+    Comparator<Product> combined = byName.thenComparing(byPriceDesc);
+  </code></pre>
+</div>
+
+
+<h3>4. What is the Iterator pattern? How does it work and what is the difference between Iterator and ListIterator?</h3>
+The Iterator pattern provides a standard way to traverse a collection without exposing its internal structure. Every Collection returns an Iterator via iterator(), with hasNext() (is there a next element?) and next() (return and advance). ListIterator extends Iterator and is specific to Lists — it adds backward traversal (hasPrevious(), previous()), the ability to add or set elements during iteration, and access to the current index. A key rule: never modify a collection directly while iterating with an Iterator — use iterator.remove() instead, or you get ConcurrentModificationException.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    List<String> names = new ArrayList<>(List.of("Alice","Bob","Charlie","David"));
+
+    // Basic Iterator
+    Iterator<String> it = names.iterator();
+    while (it.hasNext()) {
+        String name = it.next();
+        if (name.startsWith("C")) {
+            it.remove();  // safe removal during iteration
+        }
+    }
+    System.out.println(names);  // [Alice, Bob, David]
+
+    // ListIterator — bidirectional + modify
+    ListIterator<String> lit = names.listIterator();
+    while (lit.hasNext()) {
+        String n = lit.next();
+        lit.set(n.toUpperCase());     // replace current element
+    }
+    System.out.println(names);  // [ALICE, BOB, DAVID]
+
+    // Traverse backward
+    while (lit.hasPrevious()) {
+        System.out.print(lit.previous() + " ");  // DAVID BOB ALICE
+    }
+  </code></pre>
+</div>
+
+<h3>5. What is the fail-fast vs fail-safe iterator distinction? Which collections use which?</h3>
+A fail-fast iterator throws ConcurrentModificationException immediately when it detects that the collection was structurally modified during iteration (outside of the iterator's own remove/add methods). It does this by tracking a modCount counter. A fail-safe iterator works on a copy of the collection, so modifications to the original don't affect it — but you may see stale data. ArrayList, HashMap, HashSet, and most java.util collections use fail-fast. CopyOnWriteArrayList, ConcurrentHashMap, and CopyOnWriteArraySet use fail-safe iterators.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // FAIL-FAST — ArrayList
+    List<String> list = new ArrayList<>(List.of("A","B","C"));
+    Iterator<String> it = list.iterator();
+    list.add("D");                // structural modification!
+    // it.next();                 // throws ConcurrentModificationException
+
+    // Safe way: use Iterator's own remove
+    Iterator<String> it2 = list.iterator();
+    while (it2.hasNext()) {
+        if (it2.next().equals("B")) it2.remove();  // fine
+    }
+
+    // FAIL-SAFE — CopyOnWriteArrayList
+    List<String> cowList = new CopyOnWriteArrayList<>(List.of("A","B","C"));
+    for (String s : cowList) {
+        cowList.add("X");  // no ConcurrentModificationException
+        System.out.print(s+" ");  // still sees original: A B C
+    }
+    System.out.println(cowList);  // [A, B, C, X, X, X]
+  </code></pre>
+</div>
+
+<h3>6. What is the difference between ArrayList and LinkedList? When should you choose one over the other?</h3>
+ArrayList is backed by a resizable array. It offers O(1) random access by index, but inserting or removing in the middle is O(n) because elements must be shifted. LinkedList is a doubly-linked list. It offers O(1) insertion/removal at the ends or at a known node, but O(n) access by index because it must traverse from the head. In practice, ArrayList is almost always faster due to memory locality (CPU cache friendliness) and less overhead per element. Choose LinkedList only when you are doing many insertions/deletions at the head or when implementing a Queue/Deque.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // ArrayList — backed by array, great for random access
+    List<String> arr = new ArrayList<>();
+    arr.add("A"); arr.add("B"); arr.add("C");
+    String s = arr.get(1);        // O(1) — direct index
+    arr.add(0, "Z");              // O(n) — shifts A,B,C right
+
+    // LinkedList — doubly linked, great for head/tail ops
+    LinkedList<String> ll = new LinkedList<>();
+    ll.addFirst("A");             // O(1)
+    ll.addLast("B");              // O(1)
+    ll.removeFirst();             // O(1)
+    String mid = ll.get(50);     // O(n) — must traverse from head
+
+    // LinkedList also implements Deque (double-ended queue)
+    Deque<String> deque = new LinkedList<>();
+    deque.push("first");
+    deque.pop();
+
+    // Rule of thumb:
+    // Frequent reads by index     → ArrayList
+    // Frequent add/remove at ends → ArrayDeque (even better than LinkedList)
+    // Both mixed heavily          → ArrayList (cache-friendly wins usually)
+  </code></pre>
+</div>
+
+<h3>7. How does ArrayList resize itself internally? What is the initial capacity and what happens when it is exceeded?</h3>
+ArrayList starts with a default initial capacity of 10 (when created with no args). When you add an element that would exceed the current capacity, ArrayList creates a new array of size (oldCapacity * 1.5 + 1) — approximately 50% growth — copies all existing elements into it, and then adds the new element. This means a resize operation is O(n) for that one add, but amortised over many adds the cost is O(1) per element. If you know the expected size upfront, pass it as a constructor argument to avoid unnecessary resizing.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Default capacity = 10
+    ArrayList<Integer> list = new ArrayList<>();
+
+    // Specify initial capacity to avoid resize overhead
+    ArrayList<Integer> optimised = new ArrayList<>(1000);
+
+    // Trim to actual size (frees unused array space)
+    list.trimToSize();
+
+    // ensureCapacity — manually trigger a resize upfront
+    list.ensureCapacity(500);
+
+    // Demonstrating growth (conceptually):
+    // Capacity: 10 → 15 → 22 → 33 → ... (each ~1.5x previous)
+    // Each add is O(1) amortised, but every ~10 adds triggers a copy
+
+    // Internal array access via reflection (educational only):
+    // new ArrayList<>().toArray()  reveals the backing array
+    // In production: just use new ArrayList<>(expectedSize)
+  </code></pre>
+</div>
+
+<h3>8. What is the difference between ArrayList and Vector? Is Vector still used in modern Java?</h3>
+Vector was the original resizable-array list from Java 1.0. It synchronizes every method (add, get, remove) with a lock, making it thread-safe but slow in single-threaded code due to locking overhead. ArrayList was introduced in Java 2 and is not synchronised — making it faster for single-threaded use. Vector doubles its capacity on resize (100% growth); ArrayList grows by ~50%. In modern Java, Vector is considered legacy. Use ArrayList for single-threaded code, and CopyOnWriteArrayList or Collections.synchronizedList() for thread-safe use cases.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Vector — legacy, synchronized, avoid in new code
+    Vector<String> vector = new Vector<>();
+    vector.add("A");         // synchronized add
+    vector.get(0);           // synchronized get — overhead even with one thread
+
+    // ArrayList — modern, unsynchronized, preferred
+    List<String> arrayList = new ArrayList<>();
+    arrayList.add("A");      // no lock overhead
+
+    // Thread-safe alternatives to Vector:
+    // Option 1: synchronizedList wrapper
+    List<String> syncList = Collections.synchronizedList(new ArrayList<>());
+
+    // Option 2: CopyOnWriteArrayList (best for read-heavy scenarios)
+    List<String> cowList = new CopyOnWriteArrayList<>();
+
+    // Capacity growth comparison:
+    // Vector:    10 → 20 → 40 → 80   (doubles — wastes more memory)
+    // ArrayList: 10 → 15 → 22 → 33   (1.5x — more memory-efficient)
+  </code></pre>
+</div>
+
+<h3>9. What is CopyOnWriteArrayList? When is it the right choice?</h3>
+CopyOnWriteArrayList is a thread-safe List variant where every write operation (add, set, remove) creates a brand-new copy of the underlying array. Readers always see a stable snapshot — they iterate over the old array even if a write happens concurrently, so they never get ConcurrentModificationException and never need a lock. The cost is that writes are expensive (O(n) copy). It is ideal when reads vastly outnumber writes: event listener lists, observer registries, and configuration lists that are set once and read thousands of times.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<>();
+    list.add("Alice");
+    list.add("Bob");
+    list.add("Charlie");
+
+    // Multiple threads can iterate simultaneously — no locking needed
+    Runnable reader = () -> {
+        for (String s : list) {             // iterates over a snapshot
+            System.out.println(s);
+            // even if another thread adds "David" here, this iteration is safe
+        }
+    };
+
+    // Write creates a brand new array copy — expensive but thread-safe
+    list.add("David");                      // O(n) copy happens here
+    list.remove("Alice");
+
+    // When NOT to use:
+    // - High-write workloads (every write copies the entire array)
+    // - Very large lists (copying 10,000 elements per write is costly)
+
+    // When to use:
+    // - Listener/observer lists (registered once, iterated often)
+    // - Read-heavy config or cache entries
+  </code></pre>
+</div>
+
+<h3>10. What is the difference between List.of(), Arrays.asList(), and new ArrayList() in terms of mutability?</h3>
+These three all create lists but with very different mutability rules. List.of() (Java 9+) creates a truly immutable list — you cannot add, remove, or even set elements, and it throws UnsupportedOperationException for any structural change. It also rejects null values. Arrays.asList() returns a fixed-size list backed by the original array — you CAN call set() to replace elements, but you CANNOT add or remove (size is fixed). new ArrayList() is fully mutable — you can add, remove, and set freely.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // List.of() — fully immutable, no nulls allowed
+    List<String> immutable = List.of("A", "B", "C");
+    // immutable.add("D");      // UnsupportedOperationException
+    // immutable.set(0, "Z");   // UnsupportedOperationException
+    // List.of("A", null);      // NullPointerException
+
+    // Arrays.asList() — fixed size, but elements can be replaced
+    String[] arr = {"X", "Y", "Z"};
+    List<String> fixed = Arrays.asList(arr);
+    fixed.set(0, "W");           // OK — replaces X with W
+    arr[1] = "Changed";          // also changes fixed! (backed by same array)
+    // fixed.add("Q");           // UnsupportedOperationException — fixed size
+
+    // new ArrayList() — fully mutable
+    List<String> mutable = new ArrayList<>(List.of("A", "B", "C"));
+    mutable.add("D");            // OK
+    mutable.remove("A");         // OK
+    mutable.set(0, "Z");         // OK
+
+    // Convert immutable to mutable safely:
+    List<String> copy = new ArrayList<>(immutable);
+    copy.add("D");               // fine
+  </code></pre>
+</div>
+
+<h3>11. How do you remove duplicates from a List while preserving insertion order?</h3>
+The most common approach is to convert to a LinkedHashSet (which removes duplicates but preserves insertion order) and then back to a List. Alternatively, you can use the Stream API with distinct(), which also preserves encounter order for ordered streams. A third approach is to manually iterate with a HashSet as a 'seen' tracker. Understand the tradeoff: the Set-based approach is O(n) but requires O(n) extra memory. The naive nested-loop approach is O(n²) and should be avoided.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    List<String> names = new ArrayList<>(
+    List.of("Alice","Bob","Alice","Charlie","Bob","David","Alice")
+    );
+
+    // Method 1: LinkedHashSet — preserves insertion order, O(n)
+    List<String> unique1 = new ArrayList<>(new LinkedHashSet<>(names));
+    System.out.println(unique1);  // [Alice, Bob, Charlie, David]
+
+    // Method 2: Stream distinct() — also preserves order for ordered streams
+    List<String> unique2 = names.stream()
+        .distinct()
+        .collect(Collectors.toList());
+    System.out.println(unique2);  // [Alice, Bob, Charlie, David]
+
+    // Method 3: manual with HashSet (useful when you need custom equality logic)
+    Set<String> seen = new HashSet<>();
+    List<String> unique3 = new ArrayList<>();
+    for (String name : names) {
+        if (seen.add(name)) {     // add() returns false if already present
+            unique3.add(name);
+        }
+    }
+    System.out.println(unique3);  // [Alice, Bob, Charlie, David]
+
+    // HashSet (no order guarantee) — if order doesn't matter
+    List<String> unordered = new ArrayList<>(new HashSet<>(names));
+  </code></pre>
+</div>
+
+<h3>12. What is the subList() method? What are its caveats?</h3>
+subList(fromIndex, toIndex) returns a view of the portion of a list between the two indices. It is a VIEW, not a copy — changes to the subList are reflected in the original list and vice versa. This is efficient (no copying) but dangerous if misused. Structural modifications to the original list (adding or removing elements) while holding a subList reference will make the subList throw ConcurrentModificationException on next access. If you need an independent copy, wrap the subList in a new ArrayList.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    List<String> names = new ArrayList<>(List.of("A","B","C","D","E","F"));
+
+    // subList — a VIEW into the original list
+    List<String> sub = names.subList(1, 4);  // [B, C, D]  (index 1 inclusive, 4 exclusive)
+    System.out.println(sub);  // [B, C, D]
+
+    // Modifying subList modifies the original
+    sub.set(0, "X");
+    System.out.println(names);  // [A, X, C, D, E, F]
+
+    // Clearing via subList — common idiom to remove a range
+    names.subList(2, 4).clear();
+    System.out.println(names);  // [A, X, E, F]
+
+    // DANGER: structural change to original → subList breaks
+    names.add("G");
+    // sub.size();  // ConcurrentModificationException!
+
+    // Safe: make an independent copy
+    List<String> fresh = new ArrayList<>(List.of("A","B","C","D","E","F"));
+    List<String> copy = new ArrayList<>(fresh.subList(1, 4));  // independent copy
+  </code></pre>
+</div>
+
+<h3>13. What is a HashMap? How does it work internally — hashing, buckets, and collision resolution?</h3>
+HashMap stores key-value pairs in an array of 'buckets'. When you put(key, value): (1) the key's hashCode() is called and mixed (to reduce clustering), (2) the result is mapped to a bucket index via index = hash & (capacity-1), (3) the entry is stored in that bucket. If two keys land in the same bucket (collision), Java uses a linked list of entries there (chaining). From Java 8 onward, when a bucket's chain grows beyond 8 entries, it converts to a balanced Red-Black tree, improving worst-case lookup from O(n) to O(log n). A good hashCode() distributes keys evenly and minimises collisions.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Internal operation (conceptual):
+    // put("Alice", 90):
+    //   1. hashCode("Alice") → some int, e.g., 63327178
+    //   2. index = 63327178 & (16-1) = some bucket, e.g., 10
+    //   3. store Entry{key="Alice", value=90, next=null} at bucket[10]
+
+    // put("Bob", 85):
+    //   1. hashCode("Bob") → different bucket, say 5
+    //   2. store at bucket[5]  — no collision
+
+    // Collision — two keys → same bucket:
+    //   put("Alice2") and put("Xlice2") might land in the same bucket
+    //   → linked list: Entry{Alice2} → Entry{Xlice2}
+    //   → if chain grows > 8 entries, converts to TreeNode (Red-Black tree)
+
+    HashMap<String, Integer> scores = new HashMap<>();
+    scores.put("Alice", 90);
+    scores.put("Bob", 85);
+    scores.get("Alice");  // hashCode → bucket → equals check → 90
+
+    // Always override BOTH hashCode and equals for custom key classes!
+    // If hashCode differs but equals returns true → HashMap breaks
+  </code></pre>
+</div>
+
+<h3>14. What is the contract between hashCode() and equals()? Why must you override both when using custom objects as HashMap keys?</h3>
+The contract: if two objects are equal according to equals(), they MUST have the same hashCode(). The reverse is not required — two objects can have the same hashCode but not be equal (that's a collision). HashMap uses hashCode() first to find the bucket, then equals() to find the exact entry within the bucket. If you override equals() but not hashCode(), two 'equal' objects might land in different buckets — so get() returns null even though the key 'exists'. If you override neither, the default Object identity is used, which almost never gives the behaviour you want for value objects.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // BAD: only overrides equals, NOT hashCode
+    class Point {
+        int x, y;
+        Point(int x, int y){ this.x=x; this.y=y; }
+
+        @Override
+        public boolean equals(Object o){
+            if(!(o instanceof Point)) return false;
+            Point p = (Point) o;
+            return x==p.x && y==p.y;
+        }
+        // missing hashCode() → two equal Points → different buckets!
+    }
+
+    Map<Point,String> map = new HashMap<>();
+    Point p1 = new Point(1,2);
+    map.put(p1, "origin area");
+    Point p2 = new Point(1,2);  // logically equal to p1
+    System.out.println(map.get(p2));  // null! — different buckets
+
+    // GOOD: override both
+    @Override
+    public int hashCode(){
+        return Objects.hash(x, y);  // same x,y → same hash → same bucket
+    }
+
+    map.put(p1, "origin area");
+    System.out.println(map.get(p2));  // "origin area" — works correctly
+  </code></pre>
+</div>
+
+<h3>15. What is the difference between HashMap, LinkedHashMap, and TreeMap?</h3>
+HashMap makes no guarantee about iteration order — entries can appear in any sequence. LinkedHashMap extends HashMap and maintains a doubly-linked list through all entries, preserving insertion order (or optionally, access order for LRU caches). TreeMap stores entries sorted by key (natural order or a custom Comparator), using a Red-Black tree internally. Operations in TreeMap are O(log n) vs HashMap's O(1) average. Choose HashMap for raw speed, LinkedHashMap when you need predictable iteration order, and TreeMap when you need keys sorted or need range-query operations like headMap(), tailMap(), and floorKey().
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // HashMap — no order guaranteed
+    Map<String,Integer> hm = new HashMap<>();
+    hm.put("Banana",2); hm.put("Apple",1); hm.put("Cherry",3);
+    System.out.println(hm);  // order varies: e.g. {Apple=1, Cherry=3, Banana=2}
+
+    // LinkedHashMap — insertion order preserved
+    Map<String,Integer> lhm = new LinkedHashMap<>();
+    lhm.put("Banana",2); lhm.put("Apple",1); lhm.put("Cherry",3);
+    System.out.println(lhm);  // always: {Banana=2, Apple=1, Cherry=3}
+
+    // LinkedHashMap as LRU cache (access-order mode)
+    Map<String,Integer> lru = new LinkedHashMap<>(16, 0.75f, true) {
+        protected boolean removeEldestEntry(Map.Entry<String,Integer> e){
+            return size() > 3;  // keep only last 3 accessed
+        }
+    };
+
+    // TreeMap — keys sorted alphabetically
+    Map<String,Integer> tm = new TreeMap<>();
+    tm.put("Banana",2); tm.put("Apple",1); tm.put("Cherry",3);
+    System.out.println(tm);          // {Apple=1, Banana=2, Cherry=3}
+    System.out.println(tm.firstKey()); // Apple
+    System.out.println(tm.headMap("C")); // entries with key < "C": {Apple=1, Banana=2}
+  </code></pre>
+</div>
+
+<h3>16. What is the load factor in HashMap? What happens during rehashing?</h3>
+The load factor (default 0.75) controls how full the HashMap can get before it resizes. When the number of entries exceeds capacity × loadFactor (e.g., 16 × 0.75 = 12 entries), HashMap creates a new array of double the size, rehashes all existing entries into the new array, and updates all bucket indices. Rehashing is O(n) for that single operation. A load factor of 0.75 balances space efficiency and collision rate — lower values (e.g., 0.5) reduce collisions but waste memory; higher values (e.g., 1.0) save memory but increase collisions and degrade performance.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Default: capacity=16, loadFactor=0.75
+    // Rehash triggers when: entries > 16 * 0.75 = 12
+    HashMap<String,Integer> map = new HashMap<>();  // default
+
+    // Custom capacity and load factor
+    // Useful when you know expected size upfront — avoid rehashing
+    HashMap<String,Integer> tuned = new HashMap<>(64, 0.75f);
+    // 64 capacity → rehash won't happen until 48 entries
+
+    // For 1000 entries, pre-size to avoid 5+ rehashes:
+    HashMap<String,Integer> large = new HashMap<>(2048);
+    // capacity should be power-of-2 larger than expectedSize/loadFactor
+
+    // Visualising rehash:
+    // Capacity 16 → 12 entries added → REHASH → capacity 32
+    // Capacity 32 → 24 entries added → REHASH → capacity 64
+    // Each rehash: new array + re-index ALL existing entries (O(n))
+
+    // Formula for choosing initial capacity:
+    // initialCapacity = (int)(expectedEntries / loadFactor) + 1
+    int expected = 100;
+    int initCap = (int)(expected / 0.75) + 1;  // 134 → round up to 256 (next power of 2)
+  </code></pre>
+</div>
+
+<h3>17. What is the difference between HashMap and Hashtable? Is Hashtable still used?</h3>
+Hashtable is a legacy class from Java 1.0. Like Vector, every method is synchronized — thread-safe but slow. It does not allow null keys or null values (throws NullPointerException). HashMap (Java 2) is unsynchronized, faster, and allows one null key and multiple null values. Hashtable also extends the legacy Dictionary class rather than AbstractMap, making its API inconsistent. In modern Java, Hashtable is obsolete. Use HashMap for single-threaded code, ConcurrentHashMap for concurrent access (much better than Hashtable's coarse lock), and never use Hashtable in new code.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Hashtable — legacy, synchronized, no nulls, avoid in new code
+    Hashtable<String, Integer> ht = new Hashtable<>();
+    ht.put("Alice", 90);
+    // ht.put(null, 1);     // NullPointerException
+    // ht.put("Bob", null); // NullPointerException
+
+    // HashMap — modern, fast, allows one null key
+    HashMap<String, Integer> hm = new HashMap<>();
+    hm.put(null, 0);          // null key allowed
+    hm.put("Alice", null);    // null value allowed
+    System.out.println(hm.get(null));  // 0
+
+    // Thread-safe modern alternative: ConcurrentHashMap
+    // - No full-table lock; locks at bucket level
+    // - Much better throughput than Hashtable
+    // - Does NOT allow null keys or null values (like Hashtable)
+    ConcurrentHashMap<String,Integer> chm = new ConcurrentHashMap<>();
+    chm.put("Alice", 90);
+    chm.putIfAbsent("Bob", 85);   // atomic check-then-insert
+  </code></pre>
+</div>
+
+<h3>18. What are the useful Java 8 Map methods like computeIfAbsent(), merge(), and getOrDefault()?</h3>
+Java 8 added several powerful Map methods that make common patterns atomic and concise. getOrDefault(key, defaultValue) returns the value or a default if the key is missing — avoids null checks. computeIfAbsent(key, mappingFn) computes and stores a value only if the key is absent — perfect for lazy initialisation of complex values like lists. merge(key, value, mergeFn) combines an existing value with a new one — ideal for counting or accumulation. compute(key, fn) always runs the function regardless of whether the key exists.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    Map<String, Integer> scores = new HashMap<>();
+
+    // getOrDefault — no more null checks
+    int aliceScore = scores.getOrDefault("Alice", 0);  // 0, not null
+
+    // computeIfAbsent — create value lazily only if key missing
+    // Perfect for grouping: Map<String, List<String>>
+    Map<String, List<String>> groups = new HashMap<>();
+    groups.computeIfAbsent("fruits", k -> new ArrayList<>()).add("Apple");
+    groups.computeIfAbsent("fruits", k -> new ArrayList<>()).add("Banana");
+    // Key "fruits" created once, Apple and Banana added to same list
+
+    // merge — combine old and new value (great for counting)
+    Map<String, Integer> wordCount = new HashMap<>();
+    String[] words = {"java","streams","java","lambda","java","streams"};
+    for (String w : words) {
+        wordCount.merge(w, 1, Integer::sum);
+        // if absent: put(w, 1)
+        // if present: put(w, oldValue + 1)
+    }
+    System.out.println(wordCount);  // {java=3, streams=2, lambda=1}
+
+    // compute — always applies function
+    scores.compute("Alice", (k, v) -> v == null ? 10 : v + 10);
+  </code></pre>
+</div>
+
+<h3>19. How do you iterate over a Map? What are the different ways and which is preferred?</h3>
+There are four main ways to iterate a Map. entrySet() iteration is the most efficient when you need both key and value — it avoids the extra lookup that keySet() iteration requires. keySet() is fine when you only need keys. values() is for when you only need values. forEach() with a BiConsumer lambda (Java 8+) is the most readable and concise. Avoid the pattern of iterating keySet() and calling get(key) in the loop body — that's two lookups where entrySet() gives you both in one.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    Map<String, Integer> scores = Map.of("Alice",90, "Bob",85, "Charlie",92);
+
+    // 1. entrySet() — most efficient when you need both key and value
+    for (Map.Entry<String,Integer> entry : scores.entrySet()) {
+        System.out.println(entry.getKey() + " → " + entry.getValue());
+    }
+
+    // 2. keySet() — when you only need keys
+    for (String key : scores.keySet()) {
+        System.out.println(key);
+    }
+
+    // 3. values() — when you only need values
+    for (int val : scores.values()) {
+        System.out.println(val);
+    }
+
+    // 4. forEach (Java 8+) — cleanest, uses BiConsumer
+    scores.forEach((name, score) ->
+        System.out.println(name + " scored " + score));
+
+    // ANTI-PATTERN: keySet() + get() — two hash lookups per iteration
+    for (String key : scores.keySet()) {
+        int val = scores.get(key);  // extra lookup — avoid this
+    }
+
+    // Stream-based iteration with transformation
+    scores.entrySet().stream()
+        .filter(e -> e.getValue() >= 90)
+        .forEach(e -> System.out.println(e.getKey() + " is top scorer"));
+  </code></pre>
+</div>
+
+<h3>20. What is ConcurrentHashMap? How does it achieve thread-safety without locking the whole map?</h3>
+ConcurrentHashMap achieves thread-safety through segment-level (bucket-level) locking instead of locking the entire map. In Java 7, the map was divided into 16 segments, each with its own lock. In Java 8, it was redesigned to use CAS (Compare-And-Swap) operations for most writes, and only lock individual tree bins (buckets that have grown into trees) when necessary. Reads never lock. This allows up to 16 (or more) concurrent writes and unlimited concurrent reads with much better throughput than Hashtable. It does NOT permit null keys or values.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+
+    // Thread 1 and Thread 2 can write to different buckets simultaneously
+    // without blocking each other
+    Runnable writer1 = () -> {
+        for (int i=0; i<100; i++) map.put("T1-"+i, i);
+    };
+    Runnable writer2 = () -> {
+        for (int i=0; i<100; i++) map.put("T2-"+i, i);
+    };
+
+    Thread t1 = new Thread(writer1);
+    Thread t2 = new Thread(writer2);
+    t1.start(); t2.start();
+    t1.join(); t2.join();
+    System.out.println("Total entries: " + map.size());  // 200 — no lost updates
+
+    // Atomic compound operations
+    map.putIfAbsent("Alice", 90);           // atomic: check + insert
+    map.replace("Alice", 90, 95);           // atomic: check old + update
+    map.compute("Alice", (k,v) -> v+5);    // atomic read-modify-write
+
+    // ConcurrentHashMap size() is approximate in concurrent scenarios
+    // Use mappingCount() for large maps (returns long)
+  </code></pre>
+</div>
+
+<h3>21. What is a Set in Java? How does HashSet determine uniqueness?</h3>
+A Set is a Collection that contains no duplicate elements. The contract is that no two elements e1 and e2 can satisfy e1.equals(e2). HashSet is backed internally by a HashMap — each element is stored as a key in the HashMap with a dummy constant as the value. When you add() an element, it calls hashCode() to find the bucket, then equals() to check if an equal element already exists. If yes, the add is rejected and the Set remains unchanged. This is why you must override both hashCode() and equals() on objects you want to use in a HashSet.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // HashSet — backed by a HashMap internally
+    Set<String> set = new HashSet<>();
+    set.add("Alice");
+    set.add("Bob");
+    set.add("Alice");  // duplicate — silently ignored
+    System.out.println(set.size());   // 2, not 3
+    System.out.println(set);          // [Alice, Bob] (order not guaranteed)
+
+    boolean added = set.add("Charlie");  // add() returns true if new element
+    boolean dup   = set.add("Alice");    // returns false if duplicate
+    System.out.println(added);  // true
+    System.out.println(dup);    // false
+
+    // Custom object — must override hashCode + equals
+    class Email {
+        String address;
+        Email(String a){ this.address = a; }
+
+        @Override public boolean equals(Object o){
+            return o instanceof Email && address.equals(((Email)o).address);
+        }
+        @Override public int hashCode(){ return address.toLowerCase().hashCode(); }
+    }
+
+    Set<Email> emails = new HashSet<>();
+    emails.add(new Email("alice@test.com"));
+    emails.add(new Email("alice@test.com"));  // duplicate — rejected
+    System.out.println(emails.size());  // 1
+  </code></pre>
+</div>
+
+<h3>22. What is the difference between HashSet, LinkedHashSet, and TreeSet?</h3>
+HashSet stores elements with no order guarantee and gives O(1) average for add, remove, and contains. LinkedHashSet extends HashSet with a doubly-linked list that preserves insertion order — iteration always reflects the order elements were added. TreeSet stores elements in sorted order (natural or custom Comparator) using a Red-Black tree, giving O(log n) for operations but allowing sorted traversal and range operations. Choose HashSet for raw speed, LinkedHashSet when you need predictable iteration order, and TreeSet when you need elements sorted or need headSet()/tailSet()/subSet() range operations.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // HashSet — no order
+    Set<Integer> hs = new HashSet<>(List.of(5,3,1,4,2));
+    System.out.println(hs);  // order unpredictable: e.g. [1,2,3,4,5] or [3,4,1,2,5]
+
+    // LinkedHashSet — insertion order
+    Set<Integer> lhs = new LinkedHashSet<>(List.of(5,3,1,4,2));
+    System.out.println(lhs);  // always: [5,3,1,4,2]
+
+    // TreeSet — sorted order (natural ordering for Integers)
+    TreeSet<Integer> ts = new TreeSet<>(List.of(5,3,1,4,2));
+    System.out.println(ts);          // [1,2,3,4,5]
+    System.out.println(ts.first());  // 1
+    System.out.println(ts.last());   // 5
+    System.out.println(ts.headSet(3));     // elements < 3: [1,2]
+    System.out.println(ts.tailSet(3));     // elements >= 3: [3,4,5]
+    System.out.println(ts.subSet(2, 5));   // elements from 2 to 4: [2,3,4]
+    System.out.println(ts.floor(3));       // largest element <= 3: 3
+    System.out.println(ts.ceiling(3));     // smallest element >= 3: 3
+  </code></pre>
+</div>
+
+<h3>23. How do you perform set operations like union, intersection, and difference in Java?</h3>
+Java's Collection interface has addAll(), retainAll(), and removeAll() methods that implement set algebra. addAll() performs a union. retainAll() performs an intersection (keeps only elements present in both). removeAll() performs a difference (removes all elements present in the other set). These methods mutate the calling collection, so always work on copies if you want to preserve originals. The Stream API provides an alternative approach using filter() and collect(), which is non-destructive and more expressive.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    Set<String> setA = new HashSet<>(Set.of("Alice","Bob","Charlie","David"));
+    Set<String> setB = new HashSet<>(Set.of("Bob","David","Eve","Frank"));
+
+    // UNION — all elements from both sets (a | b)
+    Set<String> union = new HashSet<>(setA);
+    union.addAll(setB);
+    System.out.println("Union: " + union);
+    // [Alice, Bob, Charlie, David, Eve, Frank]
+
+    // INTERSECTION — only elements in both sets (a & b)
+    Set<String> intersection = new HashSet<>(setA);
+    intersection.retainAll(setB);
+    System.out.println("Intersection: " + intersection);
+    // [Bob, David]
+
+    // DIFFERENCE — elements in A but not in B (a - b)
+    Set<String> difference = new HashSet<>(setA);
+    difference.removeAll(setB);
+    System.out.println("Difference A-B: " + difference);
+    // [Alice, Charlie]
+
+    // Stream approach — non-destructive, original sets preserved
+    Set<String> intersectStream = setA.stream()
+        .filter(setB::contains)
+        .collect(Collectors.toSet());
+
+    Set<String> diffStream = setA.stream()
+        .filter(e -> !setB.contains(e))
+        .collect(Collectors.toSet());
+  </code></pre>
+</div>
+
+<h3>24. What is an EnumSet? Why is it more efficient than a regular HashSet for enum values?</h3>
+EnumSet is a specialised Set implementation for use with enum types. Internally it uses a long bit vector — each bit position corresponds to an enum constant's ordinal. Operations like add, remove, contains, and iteration are therefore O(1) bitwise operations, making EnumSet extremely fast. A single long can represent up to 64 enum values; larger enums use a JumboEnumSet with multiple longs. Always use EnumSet instead of HashSet when your set elements are all from the same enum — it is faster, more memory-efficient, and cleaner.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    enum Day { MON, TUE, WED, THU, FRI, SAT, SUN }
+
+    // EnumSet — backed by a bit vector, extremely fast
+    EnumSet<Day> weekdays  = EnumSet.of(Day.MON, Day.TUE, Day.WED, Day.THU, Day.FRI);
+    EnumSet<Day> weekend   = EnumSet.of(Day.SAT, Day.SUN);
+    EnumSet<Day> all       = EnumSet.allOf(Day.class);
+    EnumSet<Day> none      = EnumSet.noneOf(Day.class);
+    EnumSet<Day> complement= EnumSet.complementOf(weekdays);  // {SAT, SUN}
+
+    // Contains is a single bit check — O(1)
+    System.out.println(weekdays.contains(Day.SAT));  // false
+    System.out.println(weekend.contains(Day.SAT));   // true
+
+    // Iteration is in enum declaration order — predictable
+    for (Day d : weekdays) System.out.print(d + " ");
+    // MON TUE WED THU FRI
+
+    // Set operations are bitwise — incredibly fast
+    EnumSet<Day> copy = EnumSet.copyOf(weekdays);
+    copy.addAll(weekend);      // union — bitwise OR
+    copy.retainAll(weekend);   // intersection — bitwise AND
+
+    // EnumMap is the Map equivalent — use when keys are enum constants
+    EnumMap<Day, String> schedule = new EnumMap<>(Day.class);
+    schedule.put(Day.MON, "Standup meeting");
+  </code></pre>
+</div>
+
+<h3>25. What is BitSet in Java? When would you use it over a boolean array or a HashSet?</h3>
+BitSet is a resizable array of bits, each representing a true/false value at a given index. Compared to a boolean[] array, BitSet uses up to 8× less memory (one byte per boolean vs one bit per entry). Compared to a HashSet<Integer>, it is far more memory-efficient for dense integer sets and much faster for bulk operations. It supports bitwise AND, OR, XOR, and NOT operations directly. Use BitSet for large sets of non-negative integers, sieve of Eratosthenes, presence/absence flags for large indices, or any scenario where memory and bulk operations matter.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // BitSet — memory-efficient boolean flags
+    BitSet primes = new BitSet(100);
+
+    // Sieve of Eratosthenes using BitSet
+    BitSet sieve = new BitSet(100);
+    sieve.set(2, 100);  // set bits 2 through 99 to true (candidates)
+    for (int i = 2; i * i < 100; i++) {
+        if (sieve.get(i)) {
+            for (int j = i*i; j < 100; j += i) {
+                sieve.clear(j);  // mark composite
+            }
+        }
+    }
+    System.out.println(sieve);  // {2, 3, 5, 7, 11, 13, ...}
+
+    // Bulk bit operations
+    BitSet a = new BitSet();
+    BitSet b = new BitSet();
+    a.set(1); a.set(2); a.set(3);
+    b.set(2); b.set(3); b.set(4);
+
+    a.and(b);   // intersection in-place: {2,3}
+    a.or(b);    // union in-place
+    a.xor(b);   // symmetric difference
+    a.andNot(b); // a minus b
+
+    // Memory: boolean[1_000_000] = ~1 MB, BitSet of 1M bits = ~125 KB
+  </code></pre>
+</div>
+
+<h3>26. What is a WeakHashMap? What problem does it solve?</h3>
+WeakHashMap is a Map implementation where the keys are held using weak references. In a normal HashMap, as long as the map holds a key, that object cannot be garbage collected — even if no other part of your application references it. In WeakHashMap, the key is held weakly, so when the key object has no other strong references, the garbage collector can reclaim it. When that happens, the corresponding entry is automatically removed from the map. This is useful for memory-sensitive caches, metadata stores, and listener registries where entries should expire when the associated object is no longer used.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Normal HashMap — prevents GC of keys
+    Map<Object, String> normalMap = new HashMap<>();
+    Object key = new Object();
+    normalMap.put(key, "some data");
+    key = null;  // our strong reference is gone
+    System.gc();
+    System.out.println(normalMap.size());  // still 1 — map holds key strongly
+
+    // WeakHashMap — key can be garbage collected
+    Map<Object, String> weakMap = new WeakHashMap<>();
+    Object weakKey = new Object();
+    weakMap.put(weakKey, "some data");
+    System.out.println(weakMap.size());    // 1
+
+    weakKey = null;  // only strong reference gone
+    System.gc();
+    Thread.sleep(100);  // give GC a chance to run
+    System.out.println(weakMap.size());   // 0 — entry removed automatically!
+
+    // Use cases:
+    // - Object metadata/attribute stores (attach data to objects without preventing GC)
+    // - Image/resource caches
+    // - Interning pools (ClassLoader metadata, etc.)
+  </code></pre>
+</div>
+
+<h3>27. What is the Queue interface in Java? What is the difference between add/offer, remove/poll, and element/peek?</h3>
+Queue models a FIFO (First In First Out) data structure. Each operation has two versions: one that throws an exception on failure and one that returns a special value. add(e) throws IllegalStateException if the queue is full; offer(e) returns false. remove() throws NoSuchElementException if the queue is empty; poll() returns null. element() throws NoSuchElementException if empty; peek() returns null. The 'offer/poll/peek' trio is generally preferred because returning null is easier to handle than catching exceptions in normal control flow.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    Queue<String> queue = new ArrayDeque<>();
+
+    // Adding
+    queue.offer("First");   // returns false if full (for bounded queues)
+    queue.offer("Second");
+    queue.offer("Third");
+    // queue.add("x");      // throws exception if full
+
+    // Peeking — look at head without removing
+    System.out.println(queue.peek());     // "First" — no removal
+    System.out.println(queue.element()); // "First" — throws if empty
+
+    // Polling — retrieve and remove head
+    System.out.println(queue.poll());    // "First"
+    System.out.println(queue.poll());    // "Second"
+    System.out.println(queue);           // [Third]
+
+    // FIFO demonstrated
+    Queue<String> tasks = new ArrayDeque<>();
+    tasks.offer("Task A");
+    tasks.offer("Task B");
+    tasks.offer("Task C");
+    while (!tasks.isEmpty()) {
+        System.out.println("Processing: " + tasks.poll());
+    }
+    // Processing: Task A → Task B → Task C (FIFO order)
+  </code></pre>
+</div>
+
+<h3>28. What is a PriorityQueue? How does it order its elements?</h3>
+PriorityQueue is an unbounded queue that orders elements by priority rather than insertion order. It is backed by a min-heap — the smallest element (by natural ordering or by a custom Comparator) is always at the head and returned first by poll(). It does NOT guarantee sorted order for the rest of the elements — only the head is guaranteed to be the minimum. PriorityQueue is commonly used in Dijkstra's shortest path algorithm, task scheduling with priorities, and any 'process the most urgent item first' scenario.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Natural ordering: min-heap (smallest first)
+    PriorityQueue<Integer> pq = new PriorityQueue<>();
+    pq.offer(30); pq.offer(10); pq.offer(20); pq.offer(5);
+
+    System.out.println(pq.peek());   // 5 — smallest is always at head
+    System.out.println(pq.poll());   // 5 — removes minimum
+    System.out.println(pq.poll());   // 10
+    System.out.println(pq.poll());   // 20
+    System.out.println(pq.poll());   // 30  ← sorted output when polling
+
+    // Custom Comparator: max-heap (largest first)
+    PriorityQueue<Integer> maxPQ = new PriorityQueue<>(Comparator.reverseOrder());
+    maxPQ.offer(30); maxPQ.offer(10); maxPQ.offer(20);
+    System.out.println(maxPQ.poll());  // 30
+
+    // Real use: task scheduling by priority
+    record Task(String name, int priority) {}
+
+    PriorityQueue<Task> tasks = new PriorityQueue<>(
+        Comparator.comparingInt(Task::priority)  // lower number = higher priority
+    );
+    tasks.offer(new Task("Bug fix", 1));
+    tasks.offer(new Task("Feature", 3));
+    tasks.offer(new Task("Deploy", 2));
+    while (!tasks.isEmpty()) {
+        System.out.println(tasks.poll().name());
+    }
+    // Bug fix → Deploy → Feature
+  </code></pre>
+</div>
+
+<h3>29. What is Deque and ArrayDeque? How do they differ from Queue and Stack?</h3>
+Deque (Double-Ended Queue) is an interface that extends Queue and allows adding and removing elements from both ends. ArrayDeque is the recommended Deque implementation backed by a resizable array. It is faster than LinkedList as a Queue and faster than Stack as a stack, because it has no synchronization overhead (Stack extends Vector) and better cache locality than LinkedList. Java's documentation recommends using ArrayDeque as the default Queue/Stack implementation in almost all cases. Use deque operations: addFirst/addLast/removeFirst/removeLast/peekFirst/peekLast.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // ArrayDeque as a Queue (FIFO)
+    Deque<String> queue = new ArrayDeque<>();
+    queue.offerLast("A");   // or simply offer()
+    queue.offerLast("B");
+    queue.offerLast("C");
+    System.out.println(queue.pollFirst());  // A  (FIFO)
+
+    // ArrayDeque as a Stack (LIFO)
+    Deque<String> stack = new ArrayDeque<>();
+    stack.push("A");    // pushes to front (addFirst)
+    stack.push("B");
+    stack.push("C");
+    System.out.println(stack.pop());  // C  (LIFO — last in, first out)
+    System.out.println(stack.peek()); // B
+
+    // Bidirectional operations — deque strength
+    Deque<Integer> deque = new ArrayDeque<>();
+    deque.addFirst(2);   // [2]
+    deque.addFirst(1);   // [1, 2]
+    deque.addLast(3);    // [1, 2, 3]
+    deque.addLast(4);    // [1, 2, 3, 4]
+    System.out.println(deque.peekFirst()); // 1
+    System.out.println(deque.peekLast());  // 4
+    deque.removeFirst(); // removes 1
+    deque.removeLast();  // removes 4
+
+    // Prefer ArrayDeque over Stack class (which is synchronized/legacy)
+  </code></pre>
+</div>
+
+<h3>30. What is a BlockingQueue? How is it used in the producer-consumer pattern?</h3>
+BlockingQueue is a thread-safe Queue where put() blocks the producer thread when the queue is full (until space is available), and take() blocks the consumer thread when the queue is empty (until an element is available). This makes it a perfect foundation for the producer-consumer pattern — threads coordinate through the queue itself, with no need for manual wait/notify synchronisation. Implementations include ArrayBlockingQueue (bounded), LinkedBlockingQueue (optionally bounded), PriorityBlockingQueue, and DelayQueue.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    BlockingQueue<String> queue = new ArrayBlockingQueue<>(5); // capacity = 5
+
+    // Producer thread — blocks if queue is full
+    Thread producer = new Thread(() -> {
+        String[] items = {"Item1","Item2","Item3","Item4","Item5","Item6"};
+        for (String item : items) {
+            try {
+                queue.put(item);  // BLOCKS if queue is full
+                System.out.println("Produced: " + item);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    });
+
+    // Consumer thread — blocks if queue is empty
+    Thread consumer = new Thread(() -> {
+        try {
+            for (int i = 0; i < 6; i++) {
+                String item = queue.take();  // BLOCKS if queue is empty
+                System.out.println("Consumed: " + item);
+                Thread.sleep(200);           // simulate processing time
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    });
+
+    producer.start();
+    consumer.start();
+    // Producer and consumer self-coordinate through the blocking queue
+  </code></pre>
+</div>

@@ -1,0 +1,1060 @@
+<p class="intro">The classic first program — printing "Hello, World!" — teaches you the minimal structure of a Java program.</p>
+
+<h3>1. What is a class in Java?</h3>
+A class is a blueprint or template used to create objects. It defines the properties (fields) and behaviors (methods) of objects.
+
+<h3>Example:</h3>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class Student {
+    String name;
+    int age;
+
+    void display() {
+        System.out.println(name + " " + age);
+    }
+  }
+  </code></pre>
+</div>
+
+<h3>2. What is an object?</h3>
+An object is an instance of a class. It occupies memory and can access the class's fields and methods.
+
+<h3>Example:</h3>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    Student s = new Student();
+    s.name = "Rahul";
+    s.age = 20;
+    s.display();
+  </code></pre>
+</div>
+
+<h3>3. What is the difference between a class and an object?</h3>
+- A class is a blueprint that defines properties and methods and no memory is allocated until objects are created. <br>
+- An object is an instance of a class with memory allocated for its data and it uses the properties and methods defined by the class.
+
+<h3>Example:</h3>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Class definition
+    class Student {
+        String name;
+        int age;
+
+        void display() {
+            System.out.println(name + " " + age);
+        }
+    }
+
+    // Object creation
+    Student s = new Student();
+    s.name = "Rahul";
+    s.age = 20;
+    s.display();
+  </code></pre>
+</div>
+
+<h3>4. What is a constructor?</h3>
+A constructor is a special method that initializes an object. It has the same name as the class and has no return type.
+<h3>Example:</h3>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class Student {
+        Student() {
+            System.out.println("Constructor called");
+        }
+    }
+  </code></pre>
+</div>
+
+<h3>5. What are the types of constructors?</h3>
+* Default Constructor<br>
+* No-Argument Constructor <br>
+* Parameterized Constructor<br>
+* Copy Constructor (user-defined pattern in Java)
+<h3>Example:</h3>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class Student {
+        String name;
+        Student(String n) {
+            name = n;
+        }
+    }
+  </code></pre>
+</div>
+
+<h3>6. What is the `this` keyword?</h3>
+`this` refers to the current object. It is used to distinguish instance variables from local variables and to call another constructor.
+<h3>Example:</h3>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class Student {
+        String name;
+        Student(String name) {
+            this.name = name;
+        }
+    }
+  </code></pre>
+</div>
+
+<h3>7. What is the difference between instance variables and local variables?</h3>
+Instance variables are declared inside a class but outside any method, constructor, or block. They belong to an instance of the class and have default values. <br>
+Local variables are declared inside a method, constructor, or block and exist only during the execution of that method. They must be initialized before use.
+
+<h3>8. What are static members in a class?</h3>
+Static members belong to the class rather than individual objects. They can be accessed without creating an object. Static variables are shared among all instances of the class, and static methods can only access static variables and other static methods.
+<h3>Example:</h3>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class Student {
+        static String college = "ABC College";
+        static void showCollege() {
+            System.out.println(college);
+        }
+    }
+
+    Student.showCollege();
+  </code></pre>
+</div>
+
+<h3>9. What is method overloading?</h3>
+Method overloading means defining multiple methods with the same name but different parameter lists.
+<h3>Example:</h3>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class Calculator {
+        int add(int a, int b) {
+            return a + b;
+        }
+        int add(int a, int b, int c) {
+            return a + b + c;
+        }
+    }
+  </code></pre>
+</div>
+
+<h3>10. What is encapsulation?</h3>
+Encapsulation is the practice of hiding data by making fields private and providing public getter and setter methods to access them.
+<h3>Example:</h3>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class Employee {
+        private int salary;
+        public void setSalary(int salary) {
+            this.salary = salary;
+        }
+        public int getSalary() {
+            return salary;
+        }
+    }
+  </code></pre>
+</div>
+
+<h2>Running the Program</h2>
+<div class="code-block">
+  <span class="code-label">Terminal</span>
+  <pre><code># Step 1: Compile
+javac HelloWorld.java
+
+# Step 2: Run
+java HelloWorld
+
+# Output
+Hello, World!</code></pre>
+</div>
+
+
+Here are **10 mid to senior-level Java interview questions focused on classes**, with solid conceptual answers.
+
+---
+
+## 1. What happens internally when a Java object is created using `new`?
+
+**Answer:**
+When `new` is used:
+
+* Memory is allocated on the heap
+* Constructor is invoked
+* Object fields are initialized (default → explicit → constructor)
+* Reference is returned to the stack
+
+Example:
+
+```java
+Student s = new Student();
+```
+
+Internally includes class loading (if not already loaded), memory allocation, and initialization steps.
+
+---
+
+## 2. What is class loading, and how does it relate to object creation?
+
+**Answer:**
+Class loading is handled by the ClassLoader subsystem:
+
+* Loading → class bytecode is loaded into JVM
+* Linking → verification, preparation, resolution
+* Initialization → static blocks executed
+
+An object cannot be created unless the class is first loaded.
+
+---
+
+## 3. What is the difference between `static`, `instance`, and `local` scope in a class?
+
+**Answer:**
+
+* **static** → belongs to class, shared across all objects
+* **instance** → belongs to each object
+* **local** → exists only inside method/block
+
+Key insight: instance variables are stored in heap, static in method area.
+
+---
+
+## 4. Can a Java class be immutable? How do you design one?
+
+**Answer:**
+Yes. To design an immutable class:
+
+* Make class `final`
+* Make fields `private final`
+* No setters
+* Initialize via constructor only
+* Return defensive copies for mutable objects
+
+Example:
+
+```java
+final class Employee {
+    private final String name;
+
+    Employee(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+```
+
+---
+
+## 5. What is deep copy vs shallow copy in Java classes?
+
+**Answer:**
+
+* **Shallow copy**: copies references (shared objects)
+* **Deep copy**: creates new objects recursively
+
+Example:
+
+```java
+Student s1 = new Student(address);
+Student s2 = s1; // shallow copy
+```
+
+For deep copy, you must manually clone referenced objects.
+
+---
+
+## 6. What is object slicing (in Java context vs C++) and can it occur in Java?
+
+**Answer:**
+Java does NOT have true object slicing like C++.
+
+However, partial behavior can appear via:
+
+* Upcasting (loss of subclass-specific fields)
+* Serialization/deserialization mismatches
+
+Java always maintains full object integrity in heap.
+
+---
+
+## 7. What is the role of constructors in inheritance?
+
+**Answer:**
+
+* Constructors are NOT inherited
+* Superclass constructor is always called first
+* If not explicitly called, `super()` is inserted by compiler
+
+Example:
+
+```java
+class A {
+    A() { System.out.println("A"); }
+}
+
+class B extends A {
+    B() { System.out.println("B"); }
+}
+```
+
+Output:
+
+```
+A
+B
+```
+
+---
+
+## 8. What is constructor chaining?
+
+**Answer:**
+Constructor chaining is calling one constructor from another:
+
+* Within same class → `this()`
+* Parent class → `super()`
+
+It helps avoid code duplication.
+
+```java
+class A {
+    A() {
+        this(10);
+    }
+
+    A(int x) {
+        System.out.println(x);
+    }
+}
+```
+
+---
+
+## 9. Can we override static methods in a class?
+
+**Answer:**
+No. Static methods cannot be overridden; they are hidden.
+
+This is called **method hiding**, not polymorphism.
+
+Resolution happens at compile time based on reference type.
+
+---
+
+## 10. What is the difference between composition and inheritance in class design?
+
+**Answer:**
+
+| Inheritance       | Composition        |
+| ----------------- | ------------------ |
+| IS-A relationship | HAS-A relationship |
+| Tight coupling    | Loose coupling     |
+| Harder to change  | More flexible      |
+
+Example:
+
+```java
+class Engine {}
+
+class Car {
+    private Engine engine; // composition
+}
+```
+
+Here are the same **10 mid/senior-level Java class interview questions**, now enhanced with **clear examples for better understanding**.
+
+---
+
+## 1. What is the difference between tight coupling and loose coupling in classes?
+
+**Answer:**
+
+* Tight coupling: classes depend directly on concrete implementations
+* Loose coupling: classes depend on abstractions (interfaces)
+
+**Example (Loose Coupling):**
+
+```java id="q1"
+interface Payment {
+    void pay();
+}
+
+class CreditCardPayment implements Payment {
+    public void pay() {
+        System.out.println("Paid using credit card");
+    }
+}
+
+class PaymentService {
+    private Payment payment;
+
+    PaymentService(Payment payment) {
+        this.payment = payment;
+    }
+
+    void processPayment() {
+        payment.pay();
+    }
+}
+```
+
+---
+
+## 2. When should we use an abstract class instead of an interface?
+
+**Answer:**
+Use abstract class when:
+
+* You need shared code + state
+* You want constructors
+
+**Example:**
+
+```java id="q2"
+abstract class Vehicle {
+    String brand;
+
+    Vehicle(String brand) {
+        this.brand = brand;
+    }
+
+    void showBrand() {
+        System.out.println(brand);
+    }
+
+    abstract void start();
+}
+
+class Car extends Vehicle {
+    Car(String brand) {
+        super(brand);
+    }
+
+    void start() {
+        System.out.println("Car starting");
+    }
+}
+```
+
+---
+
+## 3. Can a class be both abstract and final?
+
+**Answer:**
+No, because:
+
+* abstract = meant for inheritance
+* final = cannot be inherited
+
+**Example (Invalid Concept):**
+
+```java id="q3"
+// ❌ Not allowed
+// final abstract class Test {}
+```
+
+---
+
+## 4. What is method resolution order in inheritance?
+
+**Answer:**
+Java resolves method calls in:
+
+1. Child class
+2. Parent class
+3. Interface default methods
+
+**Example:**
+
+```java id="q4"
+class Parent {
+    void show() {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    void show() {
+        System.out.println("Child");
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+        obj.show();
+    }
+}
+```
+
+**Output:**
+
+```
+Child
+```
+
+---
+
+## 5. What is covariance in method overriding?
+
+**Answer:**
+Return type can be a subclass type in overriding.
+
+**Example:**
+
+```java id="q5"
+class A {
+    A getObject() {
+        return this;
+    }
+}
+
+class B extends A {
+    @Override
+    B getObject() {   // Covariant return type
+        return this;
+    }
+}
+```
+
+---
+
+## 6. What is a marker interface?
+
+**Answer:**
+An empty interface used for metadata tagging.
+
+**Example:**
+
+```java id="q6"
+import java.io.Serializable;
+
+class Student implements Serializable {
+    int id = 1;
+    String name = "John";
+}
+```
+
+Used by JVM for special processing like serialization.
+
+---
+
+## 7. Difference between aggregation and composition?
+
+**Answer:**
+
+* Aggregation: weak relationship
+* Composition: strong ownership
+
+**Example (Aggregation):**
+
+```java id="q7a"
+class Teacher {
+    String name;
+}
+
+class Department {
+    Teacher teacher; // teacher can exist independently
+}
+```
+
+**Example (Composition):**
+
+```java id="q7b"
+class Engine {
+}
+
+class Car {
+    private Engine engine = new Engine(); // Car owns Engine
+}
+```
+
+---
+
+## 8. How does a class interact with JVM memory?
+
+**Answer:**
+
+* Class metadata → Method Area
+* Objects → Heap
+* Method calls → Stack
+
+**Example:**
+
+```java id="q8"
+class Demo {
+    static int x = 10;  // Method Area
+
+    void show() {
+        int y = 20;     // Stack
+        System.out.println(x + y);
+    }
+}
+```
+
+---
+
+## 9. What is class initialization order?
+
+**Answer:**
+Order:
+
+1. Static block (parent → child)
+2. Instance block (parent → child)
+3. Constructor (parent → child)
+
+**Example:**
+
+```java id="q9"
+class A {
+    static {
+        System.out.println("Static A");
+    }
+
+    {
+        System.out.println("Instance A");
+    }
+
+    A() {
+        System.out.println("Constructor A");
+    }
+}
+
+class B extends A {
+    static {
+        System.out.println("Static B");
+    }
+
+    {
+        System.out.println("Instance B");
+    }
+
+    B() {
+        System.out.println("Constructor B");
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        new B();
+    }
+}
+```
+
+**Output:**
+
+```
+Static A
+Static B
+Instance A
+Constructor A
+Instance B
+Constructor B
+```
+
+---
+
+## 10. What are inner classes and why are they used?
+
+**Answer:**
+Used for logical grouping and encapsulation.
+
+**Example:**
+
+```java id="q10"
+class Outer {
+
+    class Inner {
+        void display() {
+            System.out.println("Inner class method");
+        }
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        Outer outer = new Outer();
+        Outer.Inner inner = outer.new Inner();
+        inner.display();
+    }
+}
+```
+
+<p class="intro">This is the list of 20 package and Interface interview questions</p>
+
+Q1
+What is a package in Java and why do we use it? Can you explain with a real-world analogy?
+Package
+A package in Java is a namespace that groups related classes, interfaces, and sub-packages. Think of it like a file system: just as you organise documents in labelled folders, you organise classes in packages. This prevents naming conflicts, controls access, and makes the codebase easier to maintain.
+
+// Declaring a package at the top of a file
+package com.company.utils;
+
+public class StringHelper {
+    public static String capitalise(String s) {
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+}
+// In another file, you import and use it:
+import com.company.utils.StringHelper;
+Q2
+What is the difference between import and static import? When would you prefer one over the other?
+Package
+A regular import lets you use a class without its full package path. A static import lets you use static members (fields or methods) of a class directly, without the class name prefix. Static import is handy when you use a method repeatedly (e.g., Math.sqrt), but overusing it can reduce readability.
+
+import java.util.ArrayList;          // regular import
+import static java.lang.Math.sqrt;    // static import
+
+ArrayList<Double> list = new ArrayList<>();
+double val = sqrt(144);  // no need to write Math.sqrt(144)
+Q3
+What are access modifiers and how do they interact with packages? Explain with examples.
+Package
+Java has four access levels. public — visible everywhere. protected — visible in the same package AND subclasses. default (no keyword) — visible only within the same package. private — visible only within the same class. The package boundary is the dividing line for 'default' visibility.
+
+package com.app.model;
+public class User {
+    public String name;          // anywhere
+    protected int age;           // same package + subclasses
+    int score;                   // same package only (default)
+    private String password;     // this class only
+}
+// com.app.model.Admin (same package) can access name, age, score
+// com.other.Service (different package) can only access name
+Q4
+What happens if two classes in different packages have the same name? How does Java resolve this conflict?
+Package
+Java uses the fully qualified class name (package + class name) to distinguish them. If you import both, the compiler complains about ambiguity for the conflicting name. You resolve it by using the fully qualified name for at least one of them.
+
+import com.google.Date;
+import java.util.Date;  // COMPILE ERROR: ambiguous
+
+// Fix: use fully qualified name for one of them
+import java.util.Date;
+
+java.sql.Date sqlDate = new java.sql.Date(System.currentTimeMillis());
+Date utilDate = new Date();
+Q5
+What is the relationship between a package and the directory structure? Is it mandatory?
+Package
+By convention (and enforced by most compilers and build tools), the package name must match the directory path. A class in package com.app.service should live at com/app/service/MyClass.java. While the Java specification technically allows flexibility, the Java compiler and tools like Maven and Gradle strictly enforce this mapping.
+
+// File: src/com/app/service/OrderService.java
+package com.app.service;      // must match the folder path
+
+public class OrderService { ... }
+Q6
+What is a sub-package? Does a parent package automatically have access to classes in its sub-package?
+Package
+A sub-package is simply a package nested inside another by naming convention (e.g., com.app.utils is a sub-package of com.app). Crucially, Java does NOT give a parent package automatic access to its sub-package's members. They are treated as completely independent namespaces.
+
+package com.app;
+// This class CANNOT access default-access members of com.app.utils
+// just because 'app' is the parent of 'app.utils'
+
+import com.app.utils.Helper;  // must import explicitly
+Q7
+What are built-in Java packages you use often, and what do they contain?
+Package
+Java ships with many packages. java.lang is auto-imported and holds String, Math, System, Object, etc. java.util has collections, Date, Scanner. java.io and java.nio cover file and stream I/O. java.net covers networking. java.sql covers JDBC. Knowing these saves you from reinventing the wheel.
+
+import java.util.List;
+import java.util.ArrayList;
+import java.io.FileReader;
+import java.net.URL;
+
+List<String> names = new ArrayList<>();
+URL url = new URL("https://example.com");
+Q8
+How does Java's module system (introduced in Java 9) relate to packages? How are they different?
+Package
+Packages group classes within a project. Modules (java.base, java.sql, etc.) group packages and control which packages are exported to other modules. A module is a higher-level unit: you declare it in module-info.java and explicitly say which packages you open. This solves the 'classpath hell' problem of large applications.
+
+// module-info.java
+module com.myapp {
+    requires java.sql;           // depend on java.sql module
+    exports com.myapp.service;   // only this package is public
+    // com.myapp.internal is NOT exported — fully hidden
+}
+Q9
+What is the significance of the java.lang package? Why doesn't it need an import statement?
+Package
+java.lang contains the most fundamental classes that almost every Java program needs: Object (the root of all classes), String, Integer, System, Math, Thread, and others. Because it is used universally, the Java compiler automatically imports java.lang.* for every file — you never need to write it explicitly.
+
+// No import needed for any of these
+String msg = "Hello";
+int max = Math.max(10, 20);
+System.out.println(Thread.currentThread().getName());
+Object obj = new Object();
+Q10
+What is the difference between a wildcard import (import java.util.*) and a specific import? Which is better practice?
+Package
+A wildcard import pulls in all public types from a package at compile time. A specific import names exactly one class. Wildcards don't hurt performance (the compiler resolves them at compile time, not runtime), but they reduce code clarity — a reader cannot tell at a glance which classes are actually used. Best practice is to use specific imports; IDEs do this automatically.
+
+import java.util.*;          // wildcard — fine but unclear
+import java.util.ArrayList;  // specific — preferred
+import java.util.HashMap;
+Q11
+What is an interface in Java? How is it different from an abstract class?
+Interface
+An interface is a contract that defines what a class must do, without dictating how. Before Java 8 it could only have abstract methods and constants. An abstract class can have state (instance variables) and constructors; a class can extend only one abstract class but implement many interfaces. Interfaces are ideal for defining capabilities (Comparable, Serializable), while abstract classes are better for sharing partial implementation.
+
+interface Printable {
+    void print();   // implicitly public abstract
+}
+
+abstract class Document {
+    String title;
+    abstract void render();   // must override
+    void open() { System.out.println("Opening " + title); } // shared
+}
+
+class Report extends Document implements Printable {
+    void render() { ... }
+    public void print() { ... }
+}
+Q12
+Can an interface have a constructor? Why or why not?
+Interface
+No, interfaces cannot have constructors. A constructor's job is to initialise object state, but interfaces cannot be instantiated — you never create an object directly from an interface. Since interfaces have no instance fields (only constants and method signatures), there is nothing to initialise. Only classes (concrete or abstract) can have constructors.
+
+interface Shape {
+    // NOT allowed: Shape() {}   // compile error
+    double area();
+}
+
+class Circle implements Shape {
+    double radius;
+    Circle(double r) { this.radius = r; }  // constructor here, not in interface
+    public double area() { return Math.PI * radius * radius; }
+}
+Q13
+What are default methods in interfaces (Java 8+)? Why were they introduced and when should you use them?
+Interface
+Default methods have a concrete body inside an interface using the 'default' keyword. They were introduced so existing interfaces (like java.util.List) could gain new methods (like forEach, sort) without breaking all implementing classes. Use them when you want to add new behaviour to an interface while maintaining backward compatibility with existing implementations.
+
+interface Vehicle {
+    void start();
+    default void honk() {
+        System.out.println("Beep beep!");  // provided out of the box
+    }
+}
+
+class Car implements Vehicle {
+    public void start() { System.out.println("Vroom"); }
+    // honk() is inherited — no need to implement it
+}
+
+new Car().honk();  // prints: Beep beep!
+Q14
+What happens when a class implements two interfaces that both have a default method with the same name?
+Interface
+This is the 'diamond problem'. The compiler forces you to override the conflicting method in the implementing class. If you do not, compilation fails. Inside your override, you can call a specific interface's version using InterfaceName.super.methodName().
+
+interface A { default void greet() { System.out.println("Hello from A"); } }
+interface B { default void greet() { System.out.println("Hello from B"); } }
+
+class C implements A, B {
+    public void greet() {
+        A.super.greet();  // explicitly choose A's version
+    }
+}
+// Without the override, compiler error: C inherits unrelated defaults
+Q15
+What are static methods in interfaces? How do they differ from default methods?
+Interface
+Static methods in interfaces (Java 8+) belong to the interface itself, not to any implementing class. They cannot be overridden by implementing classes and must be called via the interface name. Default methods are instance-level and ARE inherited. Static interface methods are useful for factory or utility helpers closely related to the interface's concept.
+
+interface MathOp {
+    int operate(int a, int b);
+
+    static MathOp add() {
+        return (a, b) -> a + b;  // factory method
+    }
+}
+
+MathOp adder = MathOp.add();
+System.out.println(adder.operate(3, 4));  // 7
+// Cannot call: someObject.add()  — must use MathOp.add()
+Q16
+What is a functional interface? How does it relate to lambda expressions?
+Interface
+A functional interface has exactly one abstract method. This makes it a target type for lambda expressions and method references. The @FunctionalInterface annotation is optional but recommended — it makes the compiler enforce the single-abstract-method rule. Examples from java.util.function: Runnable, Comparator, Predicate, Function, Consumer, Supplier.
+
+@FunctionalInterface
+interface Validator<T> {
+    boolean validate(T value);
+    // Adding a second abstract method would cause a compile error
+}
+
+Validator<String> notEmpty = s -> !s.isEmpty();
+System.out.println(notEmpty.validate("Java"));  // true
+System.out.println(notEmpty.validate(""));       // false
+Q17
+Can an interface extend another interface? Can it extend multiple interfaces?
+Interface
+Yes on both counts. An interface can extend one or more other interfaces (multiple inheritance of type). The implementing class must then provide implementations for all inherited abstract methods. This is how Java achieves a form of multiple inheritance safely — because interfaces carry no state.
+
+interface Readable  { String read(); }
+interface Writable  { void write(String data); }
+
+interface ReadWrite extends Readable, Writable {
+    void flush();  // adds another abstract method
+}
+
+class FileStream implements ReadWrite {
+    public String read()             { return "data"; }
+    public void write(String data)   { ... }
+    public void flush()              { ... }
+}
+Q18
+What is the Comparable interface? How would you implement it in a custom class?
+Interface
+Comparable defines a natural ordering for objects. It has one method: compareTo(T other), which should return a negative value if 'this' is less than 'other', zero if equal, and a positive value if greater. Once implemented, Collections.sort() and Arrays.sort() work automatically on your objects.
+
+class Student implements Comparable<Student> {
+    String name;
+    int gpa;
+    Student(String name, int gpa) { this.name = name; this.gpa = gpa; }
+
+    public int compareTo(Student other) {
+        return Integer.compare(this.gpa, other.gpa); // sort by GPA ascending
+    }
+}
+
+List<Student> students = List.of(new Student("Alice", 85), new Student("Bob", 92));
+Collections.sort(students);  // works because Student is Comparable
+Q19
+What is the difference between Comparable and Comparator interfaces? When would you choose each?
+Interface
+Comparable is implemented by the class itself — it defines the class's natural/default sort order. Comparator is external — it defines an alternative or custom ordering without modifying the class. Use Comparable for the one 'main' ordering. Use Comparator when you need multiple orderings or when you can't modify the class (e.g., a third-party class).
+
+// Comparable: built into the class
+class Employee implements Comparable<Employee> {
+    int id; String name;
+    public int compareTo(Employee o) { return this.id - o.id; }
+}
+
+// Comparator: external, flexible
+Comparator<Employee> byName = (a, b) -> a.name.compareTo(b.name);
+Comparator<Employee> byIdDesc = Comparator.comparingInt(Employee::getId).reversed();
+
+employees.sort(byName);    // sort by name
+employees.sort(byIdDesc);  // sort by id descending
+Q20
+Can interfaces have variables? What type are they and can they be changed?
+Interface
+Yes, but all variables in an interface are implicitly public static final — in other words, constants. You cannot have instance variables or mutable state in an interface. This is why interfaces are stateless contracts. If you try to assign a value to an interface variable from outside, the compiler will refuse.
+
+interface Config {
+    int MAX_RETRY = 3;       // implicitly public static final
+    String DEFAULT_URL = "https://api.example.com";
+}
+
+class ApiClient implements Config {
+    void call() {
+        // MAX_RETRY = 5;  // COMPILE ERROR — it's final
+        for (int i = 0; i < MAX_RETRY; i++) { ... }
+    }
+}
+Q21
+What is a marker interface? Give examples and explain their purpose.
+Interface
+A marker interface has no methods at all. It is used to 'tag' a class so that the JVM or a framework can treat it specially at runtime. The class's mere act of implementing it signals a capability. Classic examples are Serializable (object can be serialized), Cloneable (object can be cloned), and RandomAccess (List supports fast random access).
+
+import java.io.Serializable;
+
+class User implements Serializable {
+    String name;
+    int age;
+    // No methods needed — the JVM now knows User can be serialized to a byte stream
+}
+
+// ObjectOutputStream checks: if (obj instanceof Serializable)
+// Without it, you'd get NotSerializableException at runtime
+Q22
+What are private methods in interfaces (Java 9+)? What problem do they solve?
+Interface
+Java 9 added private (and private static) methods to interfaces. They exist to help default and static methods share common helper logic without exposing that logic to implementing classes or users of the interface. Before this, you had to duplicate code across multiple default methods or move helpers to utility classes.
+
+interface Logger {
+    default void info(String msg)  { log("INFO", msg); }
+    default void error(String msg) { log("ERROR", msg); }
+
+    private void log(String level, String msg) {
+        // shared helper — NOT visible to implementing classes
+        System.out.println("[" + level + "] " + msg);
+    }
+}
+Q23
+Can you instantiate an interface directly? What is an anonymous class and how does it relate to interfaces?
+Interface
+You cannot instantiate an interface with 'new InterfaceName()'. However, you can create an anonymous class — an inline, unnamed class that implements the interface on the spot. This was common before Java 8 lambdas. With a functional interface, a lambda is cleaner; with multi-method interfaces, anonymous classes are still used.
+
+interface Greeter {
+    void greet(String name);
+    void bye(String name);
+}
+
+// Anonymous class — implements both methods inline
+Greeter formal = new Greeter() {
+    public void greet(String name) { System.out.println("Good morning, " + name); }
+    public void bye(String name)   { System.out.println("Farewell, " + name); }
+};
+
+formal.greet("Alice");  // Good morning, Alice
+Q24
+How do interfaces support polymorphism in Java? Walk through a practical example.
+Interface
+Polymorphism means 'many forms'. An interface reference variable can point to any object that implements it. You can write code against the interface, and at runtime any implementing object can be substituted (Liskov Substitution). This is the foundation of dependency injection and the Strategy pattern.
+
+interface PaymentGateway {
+    boolean processPayment(double amount);
+}
+
+class Stripe implements PaymentGateway {
+    public boolean processPayment(double amount) { return true; /* call Stripe API */ }
+}
+class PayPal implements PaymentGateway {
+    public boolean processPayment(double amount) { return true; /* call PayPal API */ }
+}
+
+class Checkout {
+    void pay(PaymentGateway gateway, double amount) {
+        // doesn't care which gateway — works with any
+        gateway.processPayment(amount);
+    }
+}
+
+Checkout c = new Checkout();
+c.pay(new Stripe(), 99.0);  // switch gateways without changing Checkout
+c.pay(new PayPal(), 99.0);
+Q25
+What is the Iterable and Iterator interface pattern? How do they work together to enable the for-each loop?
+Interface
+Iterable has one method: iterator(), which returns an Iterator. Iterator has hasNext() and next(). When you write a for-each loop (for (T item : collection)), Java automatically calls iterator() and then repeatedly calls hasNext()/next() behind the scenes. Implementing Iterable on your custom class lets it work in for-each loops.
+
+class NumberRange implements Iterable<Integer> {
+    private final int start, end;
+    NumberRange(int start, int end) { this.start = start; this.end = end; }
+
+    public Iterator<Integer> iterator() {
+        return new Iterator<>() {
+            int current = start;
+            public boolean hasNext() { return current <= end; }
+            public Integer next()    { return current++; }
+        };
+    }
+}
+
+for (int n : new NumberRange(1, 5)) {
+    System.out.print(n + " ");  // 1 2 3 4 5
+}

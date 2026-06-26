@@ -1,0 +1,26 @@
+<p class="intro">Spring Boot is an opinionated framework built on top of Spring that simplifies Java application configuration and deployment. It reduces boilerplate setup and helps you build production-ready applications quickly.</p>
+
+<h2>Why Spring Boot?</h2>
+<ul>
+  <li><strong>Auto-configuration</strong> – Spring Boot automatically configures many common Spring components.</li>
+  <li><strong>Starter dependencies</strong> – Use preconfigured dependency bundles for web, data, security, and more.</li>
+  <li><strong>Embedded server</strong> – Run your app as a standalone JAR with Tomcat, Jetty, or Undertow built in.</li>
+</ul>
+
+<h2>Example</h2>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>@SpringBootApplication
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+</code></pre>
+</div>
+
+<div class="info-box">
+  <strong>Spring Boot vs Spring Framework</strong><br/>
+  Spring Boot is built on the Spring Framework and adds auto-configuration, starter POMs, and embedded servers for quicker app setup.
+</div>

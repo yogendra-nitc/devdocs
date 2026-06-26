@@ -1,0 +1,214 @@
+<p class="intro">Introduced by JDK 5, generics changed Java in two important ways. First, it
+added a new syntactical element to the language. Second, it caused changes to
+many of the classes and methods in the core API.</p>
+
+<p>Through the use of generics, it is possible to create classes, interfaces, and
+methods that will work in a type-safe manner with various kinds of data.Perhaps the one feature of Java that has been most significantly affected by
+generics is the Collections Framework. The collection classes have always been able to work with any type of object. The
+benefit that generics added is that the collection classes can now be used with
+complete type safety. </p>
+
+<p>
+  <h3>What Are Generics? </h3>
+At its core, the term generics means parameterized types. Parameterized types are important because they enable you to create classes, interfaces, and
+methods in which the type of data upon which they operate is specified as a parameter. Using generics, it is possible to create a single class, for example,
+that automatically works with different types of data. A class, interface, or method that operates on a parameterized type is called generic, as in generic
+class or generic method.
+<br>
+In pre-generics code, generalized classes, interfaces, and methods used Object references to
+operate on various types of objects. The problem was that they could not do so
+with type safety.Generics added the type safety. They also streamlined the process, because it is no longer necessary to explicitly employ casts to translate
+between Object and the type of data that is actually being operated upon. With generics, all casts are automatic and implicit.
+</p>
+
+<h2>A Simple Generics Example</h2>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    //A simple generic class. Here , T is a type parameter that
+    //will be replaced by a real type when an object of this class is created.
+    class Gen<T> {
+        T ob; //dclare an object of type T
+
+        //pass the constructor a reference to an object of type T
+        Gen(T o) {
+            this.ob = o;
+        }
+
+        //Returns ob.
+        T getOb() {
+            return ob;
+        }
+
+        //Show type of T
+        void showType() {
+            System.out.println("Type of T is " + ob.getClass().getName());
+        }
+    }
+
+    // Demonstrate the generic class. 
+    class GenDemo { 
+      public static void main(String args[]) { 
+        // Create a Gen reference for Integers.  
+        Gen<Integer> iOb;  
+    
+        // Create a Gen<Integer> object and assign its 
+        // reference to iOb.  Notice the use of autoboxing  
+        // to encapsulate the value 88 within an Integer object. 
+        iOb = new Gen<Integer>(88); 
+    
+        // Show the type of data used by iOb. 
+        iOb.showType(); 
+    
+        // Get the value in iOb. Notice that 
+        // no cast is needed. 
+        int v = iOb.getob(); 
+        System.out.println("value: " + v); 
+    
+        System.out.println(); 
+    
+        // Create a Gen object for Strings. 
+        Gen<String> strOb = new Gen<String>("Generics Test"); 
+    
+        // Show the type of data used by strOb. 
+        strOb.showType(); 
+    
+        // Get the value of strOb. Again, notice 
+        // that no cast is needed. 
+        String str = strOb.getob(); 
+        System.out.println("value: " + str); 
+      } 
+    }
+</code></pre>
+</div>
+<h2>The output produced by the program is shown here:</h2>
+<div class="code-block">
+  <span class="code-label">Terminal</span>
+  <pre><code>
+    Type of T is java.lang.Integer
+    value: 88
+    Type of T is java.lang.String
+    value: Generics Test
+  </code></pre>
+</div>
+
+<p> 
+  <b>Note:</b> 
+  It is recommended that type parameter names be single-character capital letters.
+Other commonly used type parameter names are V and E. One other point
+about type parameter names: Beginning with JDK 10, you cannot use <b>var</b> as the
+name of a type parameter
+</p>
+
+<p>
+  <h3>How it ensure type safety?</h3>
+  Notice that when the <b>Gen</b> constructor is called, the type argument Integer is
+  also specified. This is because the type of the object (in this case iOb) to which
+  the reference is being assigned is of type <b>Gen&lt;Integer&gt;</b>. Thus, the reference
+  returned by new must also be of type <b>&lt;Integer&gt;</b>. If it isn't, a compile-time
+  error will result. For example, the following assignment will cause a compile-
+  time error:
+  <br><br>
+  iOb = new Gen&lt;Double&gt;(88.0); // Error!
+  <br><br>
+  Because iOb is of type <b>Gen&lt;Integer&gt;</b>, it can't be used to refer to an object of
+  <b>Gen&lt;Double&gt;</b>. This type checking is one of the main benefits of generics
+  because it ensures type safety.
+</p>
+  <h3>Let's understand by other examples as well</h3>
+  <div class="code-block">
+  <span class="code-label">Java</span>
+    <pre><code>
+      //NonGen is functionality equivalent to Gen, 
+      //but it does not use generics.
+      class NonGen {
+        Object ob; //ob is now of type Object
+        //Pass the constructor a reference to an object of type Object
+        NonGen(Object o) {
+          this.ob = o;
+        }
+        //Return ob
+        Object getOb() {
+          return ob;
+        }
+        //Show type of ob
+        void showType() {
+          System.out.println("Type of ob is " + ob.getClass().getName());
+        }
+      }
+
+      //Demonstrate the non-generic class.
+      class NonGenDemo {
+        public static void main(String args[]) {
+          NonGen iOb;
+          
+          //Create NonGen object and store an Integer in it.
+          iOb = new NonGen(88); //Autoboxing still occurs
+          
+          //Show the type of data used by iOb.
+          iOb.showType();
+          /
+          /Get the value of iOb. This time, a cast is necessary.
+          int v = (Integer) iOb.getOb();
+          System.out.println("value: " + v);
+          
+          System.out.println();
+
+          //Create a NonGen object and store a String in it.
+          NonGen strOb = new NonGen("Non-Generics Test");
+
+          //Show the type of data used by strOb.
+          strOb.showType();
+          //Get the value of strOb. Again, notice that a cast is necessary.
+          String str = (String) strOb.getOb();
+          System.out.println("value: " + str);
+
+          //This compiles, but is conceptually wrong!
+          iOb = strOb;
+          v = (Integer) iOb.getOb(); //run-time error
+        }
+      }
+    </code></pre>
+  </div>
+  <p>
+    Let's look closely at each problem.
+    Notice this line:
+    <br><b> int v = (Integer) iOb.getob(); <br></b>
+    Because the return type of getob( ) is Object, the cast to Integer is necessary
+    to enable that value to be auto-unboxed and stored in v. If you remove the cast,
+    the program will not compile. With the generic version, this cast was implicit.
+  </p>
+
+  <p>
+    Now, consider the following sequence from near the end of the program:
+    // This compiles, but is conceptually wrong!
+    <br><b>iOb = strOb;
+    v = (Integer) iOb.getob(); // run-time error! </b><br>
+
+    This assignment is syntactically valid because
+    all NonGen references are the same, and any NonGen reference can refer to
+    any other NonGen object. However, the statement is semantically wrong, as the
+    next line shows. Here, the return type of getob( ) is cast to Integer, and then an
+    attempt is made to assign this value to v. The trouble is that iOb now refers to
+    an object that stores a String, not an Integer. Unfortunately, without the use of
+    generics, the Java compiler has no way to know this. Instead, a run-time
+    exception occurs when the cast to Integer is attempted. As you know, it is
+    extremely bad to have run-time exceptions occur in your code!
+  </p>
+  <p>
+    <h3>TODO: Further Readings - </h3>
+    <ul>
+      <li>A Generic Class with Two Type Parameters</li>
+      <li>Using Wildcard Arguments</li>
+      <li>Creating a Generic Method</li>
+      <li>Generic Constructors</li>
+      <li>Generic Interfaces</li>
+      <li>Casting</li>
+      <li>Overriding Methods in a Generic Class</li>
+      <li>Type Inference with Generics</li>
+      <li>Some Generic Restrictions : 
+        [Type Parameters Can't Be Instantiated], [Restrictions on Static Members],
+        [Generic Array Restrictions], [Generic Exception Restriction]
+      </li>
+    </ul>
+  </p>

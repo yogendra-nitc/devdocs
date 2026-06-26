@@ -1,0 +1,24 @@
+<p class="intro">A <strong>class</strong> is a blueprint for creating objects. An <strong>object</strong> is an instance of a class with its own state (fields) and behavior (methods).</p>
+
+<h2>Defining a Class</h2>
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>public class Car {
+    // Fields (state)
+    String brand;
+    String model;
+    int year;
+
+    // Constructor
+    public Car(String brand, String model, int year) {
+        this.brand = brand;
+        this.model = model;
+        this.year  = year;
+    }
+
+    // Method (behavior)
+    public void start() {
+        System.out.println(brand + " " + model + " is starting...");
+    }
+}</code></pre>
+</div>
