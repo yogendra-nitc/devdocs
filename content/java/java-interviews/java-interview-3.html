@@ -106,22 +106,22 @@ Type erasure means the compiler removes all generic type information at compile 
   </code></pre>
 </div>
 
-<h3>Q5. What is the difference between List, List, and List? When would you use each?</h3>
-List explicitly holds any Object — but a List is NOT a List (no covariance). You cannot pass a List where a List is expected. List is an unbounded wildcard — it accepts any List regardless of its type parameter, but you cannot add anything to it (except null) because the actual type is unknown. List is a type parameter — it lets you write reusable code where the type is determined at the call site and you CAN read and write the same type T.
+<h3>Q5. What is the difference between List&lt;?&gt;, List&lt;Object&gt;, and List&lt;T&gt;? When would you use each?</h3>
+List&lt;Object&gt; explicitly holds any Object — but a List&lt;String&gt; is NOT a List&lt;Object&gt; (no covariance). You cannot pass a List&lt;String&gt; where a List&lt;Object&gt; is expected. List&lt;?&gt; is an unbounded wildcard — it accepts any List regardless of its type parameter, but you cannot add anything to it (except null) because the actual type is unknown. List&lt;T&gt; is a type parameter — it lets you write reusable code where the type is determined at the call site and you CAN read and write the same type T.
 <div class="code-block">
   <span class="code-label">Java</span>
   <pre><code>
-    // List<Object> — NOT a supertype of List<String>
-    List<String> strings = new ArrayList<>();
-    // List<Object> objs = strings;  // COMPILE ERROR — not assignable
+    // List&lt;Object&gt; — NOT a supertype of List&lt;String&gt;
+    List&lt;String&gt; strings = new ArrayList<>();
+    // List&lt;Object&gt; objs = strings;  // COMPILE ERROR — not assignable
 
     // List&lt;?&gt; — accepts any list, but read-only (can't add elements)
     List&lt;?&gt; anything = strings;     // fine
     Object o = anything.get(0);    // fine — returns Object
     // anything.add("hello");       // COMPILE ERROR — type unknown
 
-    // List<T> — fully typed, can read AND write
-    public static <T> void copy(List<T> source, List<T> dest) {
+    // List&lt;T&gt; — fully typed, can read AND write
+    public static &lt;T&gt; void copy(List&lt;T&gt; source, List&lt;T&gt; dest) {
         for (T item : source) dest.add(item);  // safe: same type T
     }
 
@@ -269,521 +269,409 @@ A lambda can access variables from its enclosing scope — this is called variab
   </code></pre>
 </div>
 
-<h3>The Code</h3>
-<div class="code-block">
-  <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
-</div>
-
-Q11
-What is the difference between Predicate.and(), Predicate.or(), and Predicate.negate()?
-Lambda
+<h3>Q11. What is the difference between Predicate.and(), Predicate.or(), and Predicate.negate()?</h3>
 These are default methods on the Predicate interface that let you compose multiple predicates without writing nested if-else logic. and() returns a new Predicate that is true only if both predicates are true (short-circuits like &&). or() returns one that is true if at least one is true (short-circuits like ||). negate() returns the logical inverse. This makes filter conditions in streams highly readable and composable.
-
-Predicate<String> isLong    = s -> s.length() > 4;
-Predicate<String> startsWithJ = s -> s.startsWith("J");
-
-// and() — both must be true
-Predicate<String> longAndJ = isLong.and(startsWithJ);
-longAndJ.test("Java");    // true  (length 4... actually false, length=4 not >4)
-longAndJ.test("JavaScript"); // true
-
-// or() — at least one must be true
-Predicate<String> longOrJ = isLong.or(startsWithJ);
-longOrJ.test("Jo");   // true — starts with J even though short
-
-// negate() — logical inverse
-Predicate<String> notLong = isLong.negate();
-notLong.test("Hi");   // true — "Hi" is NOT long
-
-// Practical use in a stream filter
-List<String> names = List.of("Jo", "Java", "JavaScript", "Python", "Perl");
-names.stream()
-     .filter(isLong.and(startsWithJ))
-     .forEach(System.out::println);  // JavaScript
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    Predicate<String> isLong    = s -> s.length() > 4;
+    Predicate<String> startsWithJ = s -> s.startsWith("J");
+
+    // and() — both must be true
+    Predicate<String> longAndJ = isLong.and(startsWithJ);
+    longAndJ.test("Java");    // true  (length 4... actually false, length=4 not >4)
+    longAndJ.test("JavaScript"); // true
+
+    // or() — at least one must be true
+    Predicate<String> longOrJ = isLong.or(startsWithJ);
+    longOrJ.test("Jo");   // true — starts with J even though short
+
+    // negate() — logical inverse
+    Predicate<String> notLong = isLong.negate();
+    notLong.test("Hi");   // true — "Hi" is NOT long
+
+    // Practical use in a stream filter
+    List<String> names = List.of("Jo", "Java", "JavaScript", "Python", "Perl");
+    names.stream()
+         .filter(isLong.and(startsWithJ))
+         .forEach(System.out::println);  // JavaScript
+  </code></pre>
 </div>
 
-Q12
-How does a lambda expression differ from a closure in other languages? Does Java's lambda capture by reference or by value?
-Lambda
+<h3>Q12. How does a lambda expression differ from a closure in other languages? Does Java's lambda capture by reference or by value?</h3>
 In languages like JavaScript or Python, closures capture variables by reference — if the variable changes, the closure sees the new value. Java lambdas capture local variables by value (a copy), which is why the variable must be effectively final. For mutable state, Java's lambdas can reference instance/static fields (on the heap) directly — changes there are visible. So Java lambdas are closures over values (for locals) but closures over references (for heap objects).
-
-// Captured by VALUE — a snapshot of the local variable
-int multiplier = 3;  // effectively final
-Function<Integer, Integer> times = n -> n * multiplier;
-// multiplier = 5;  // ILLEGAL — would invalidate the capture
-
-// Heap objects — lambda holds a reference, mutations ARE visible
-List<String> log = new ArrayList<>();
-Consumer<String> logger = msg -> log.add(msg);  // captures reference to list
-logger.accept("first");
-logger.accept("second");
-System.out.println(log);  // [first, second] — mutations visible
-
-// Practical gotcha: shared mutable state across lambdas
-AtomicInteger counter = new AtomicInteger(0);
-Runnable inc = () -> counter.incrementAndGet();  // safe — AtomicInteger is mutable
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    // Captured by VALUE — a snapshot of the local variable
+    int multiplier = 3;  // effectively final
+    Function<Integer, Integer> times = n -> n * multiplier;
+    // multiplier = 5;  // ILLEGAL — would invalidate the capture
+
+    // Heap objects — lambda holds a reference, mutations ARE visible
+    List<String> log = new ArrayList<>();
+    Consumer<String> logger = msg -> log.add(msg);  // captures reference to list
+    logger.accept("first");
+    logger.accept("second");
+    System.out.println(log);  // [first, second] — mutations visible
+
+    // Practical gotcha: shared mutable state across lambdas
+    AtomicInteger counter = new AtomicInteger(0);
+    Runnable inc = () -> counter.incrementAndGet();  // safe — AtomicInteger is mutable
+  </code></pre>
 </div>
 
-Q13
-What is a Stream in Java 8? How is it different from a Collection?
-Streams
+<h3>Q13. What is a Stream in Java 8? How is it different from a Collection?</h3>
 A Stream is a pipeline for processing sequences of elements — it is not a data structure that stores elements. Collections store data; Streams process it. Key differences: a Stream is single-use (once consumed you cannot reuse it), it is lazy (intermediate operations do nothing until a terminal operation is called), it does not modify the source, and it can be infinite. Think of a Stream as a conveyor belt: elements flow through a series of transformation stages and are collected at the end.
-
-List<String> names = List.of("Alice", "Bob", "Charlie", "David");
-
-// Stream pipeline: source → intermediate ops → terminal op
-List<String> result = names.stream()          // source
-    .filter(n -> n.length() > 3)              // intermediate — lazy
-    .map(String::toUpperCase)                 // intermediate — lazy
-    .sorted()                                 // intermediate — lazy
-    .collect(Collectors.toList());            // terminal — triggers execution
-
-System.out.println(result);  // [ALICE, CHARLIE, DAVID]
-
-// Stream is single-use — cannot reuse after terminal op
-Stream<String> s = names.stream();
-s.forEach(System.out::println);  // fine
-// s.forEach(System.out::println);  // IllegalStateException — stream already closed
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    List<String> names = List.of("Alice", "Bob", "Charlie", "David");
+
+    // Stream pipeline: source → intermediate ops → terminal op
+    List<String> result = names.stream()          // source
+        .filter(n -> n.length() > 3)              // intermediate — lazy
+        .map(String::toUpperCase)                 // intermediate — lazy
+        .sorted()                                 // intermediate — lazy
+        .collect(Collectors.toList());            // terminal — triggers execution
+
+    System.out.println(result);  // [ALICE, CHARLIE, DAVID]
+
+    // Stream is single-use — cannot reuse after terminal op
+    Stream<String> s = names.stream();
+    s.forEach(System.out::println);  // fine
+    // s.forEach(System.out::println);  // IllegalStateException — stream already closed
+  </code></pre>
 </div>
 
-Q14
-What is the difference between intermediate and terminal operations in a Stream? Give examples of each.
-Streams
+<h3>Q14. What is the difference between intermediate and terminal operations in a Stream? Give examples of each.</h3>
 Intermediate operations are lazy — they return a new Stream and do not trigger any processing by themselves. They only execute when a terminal operation is called at the end of the pipeline. Terminal operations are eager — they trigger the entire pipeline, consume the stream, and produce a result or a side effect. A pipeline must end with exactly one terminal operation. Knowing this distinction helps you understand why a stream of 1 million elements with a filter+map+findFirst only processes elements until the first match is found.
-
-List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8);
-
-// --- INTERMEDIATE (lazy, return Stream) ---
-// filter, map, flatMap, sorted, distinct, limit, skip, peek
-
-// --- TERMINAL (eager, end the pipeline) ---
-// collect, forEach, count, findFirst, findAny, anyMatch, allMatch,
-// noneMatch, min, max, reduce, toArray
-
-long count = numbers.stream()
-    .filter(n -> {
-        System.out.println("filter: " + n);  // only prints up to findFirst match
-        return n % 2 == 0;
-    })
-    .map(n -> n * 10)         // intermediate
-    .findFirst()              // terminal — stops after first even number
-    .orElse(-1);
-
-// Because of laziness, only processes 1 and 2, then stops
-System.out.println("First even *10: " + count);  // 20
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8);
+
+    // --- INTERMEDIATE (lazy, return Stream) ---
+    // filter, map, flatMap, sorted, distinct, limit, skip, peek
+
+    // --- TERMINAL (eager, end the pipeline) ---
+    // collect, forEach, count, findFirst, findAny, anyMatch, allMatch,
+    // noneMatch, min, max, reduce, toArray
+
+    long count = numbers.stream()
+        .filter(n -> {
+            System.out.println("filter: " + n);  // only prints up to findFirst match
+            return n % 2 == 0;
+        })
+        .map(n -> n * 10)         // intermediate
+        .findFirst()              // terminal — stops after first even number
+        .orElse(-1);
+
+    // Because of laziness, only processes 1 and 2, then stops
+    System.out.println("First even *10: " + count);  // 20
+  </code></pre>
 </div>
 
-Q15
-Explain the collect() operation. What is Collectors and what are the most useful collectors?
-Streams
+<h3>Q15. Explain the collect() operation. What is Collectors and what are the most useful collectors?</h3>
 collect() is a terminal operation that assembles the stream elements into a result container — a List, Set, Map, String, or any custom type. The Collectors utility class provides ready-made Collector implementations. The most common ones are: toList(), toSet(), toMap(), joining() for strings, groupingBy() for bucketing elements by a key, counting(), and partitioningBy() which splits into a true/false map based on a Predicate.
-
-List<String> names = List.of("Alice","Bob","Charlie","Alice","David");
-
-// toList, toSet
-List<String> list = names.stream().collect(Collectors.toList());
-Set<String>  set  = names.stream().collect(Collectors.toSet()); // removes duplicates
-
-// joining
-String csv = names.stream().collect(Collectors.joining(", ", "[", "]"));
-// [Alice, Bob, Charlie, Alice, David]
-
-// groupingBy — Map<Integer, List<String>> grouped by name length
-Map<Integer, List<String>> byLength = names.stream()
-    .collect(Collectors.groupingBy(String::length));
-// {5=[Alice, Alice, David], 3=[Bob], 7=[Charlie]}
-
-// counting within groups
-Map<Integer, Long> countByLength = names.stream()
-    .collect(Collectors.groupingBy(String::length, Collectors.counting()));
-
-// partitioningBy — split into two groups
-Map<Boolean, List<String>> partition = names.stream()
-    .collect(Collectors.partitioningBy(n -> n.length() > 3));
-// {true=[Alice, Charlie, Alice, David], false=[Bob]}
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    List<String> names = List.of("Alice","Bob","Charlie","Alice","David");
+
+    // toList, toSet
+    List<String> list = names.stream().collect(Collectors.toList());
+    Set<String>  set  = names.stream().collect(Collectors.toSet()); // removes duplicates
+
+    // joining
+    String csv = names.stream().collect(Collectors.joining(", ", "[", "]"));
+    // [Alice, Bob, Charlie, Alice, David]
+
+    // groupingBy — Map<Integer, List<String>> grouped by name length
+    Map<Integer, List<String>> byLength = names.stream()
+        .collect(Collectors.groupingBy(String::length));
+    // {5=[Alice, Alice, David], 3=[Bob], 7=[Charlie]}
+
+    // counting within groups
+    Map<Integer, Long> countByLength = names.stream()
+        .collect(Collectors.groupingBy(String::length, Collectors.counting()));
+
+    // partitioningBy — split into two groups
+    Map<Boolean, List<String>> partition = names.stream()
+        .collect(Collectors.partitioningBy(n -> n.length() > 3));
+    // {true=[Alice, Charlie, Alice, David], false=[Bob]}
+  </code></pre>
 </div>
 
-Q16
-What is flatMap() and how is it different from map()?
-Streams
-map() applies a function to each element and returns a stream where each input element becomes exactly one output element. flatMap() applies a function that returns a Stream for each element and then flattens all those streams into a single stream. It is essential when each input element naturally expands into multiple outputs — sentences into words, orders into line items, nested lists into flat lists. Without flatMap you'd get a Stream>, which is rarely useful.
-
-// map() — one-to-one: each element becomes one result
-List<String> names = List.of("Alice Bob", "Charlie Dave");
-Stream<String[]> arrayStream = names.stream()
-    .map(s -> s.split(" "));  // Stream<String[]> — not flat
-
-// flatMap() — one-to-many: each element expands into multiple
-List<String> words = names.stream()
-    .flatMap(s -> Arrays.stream(s.split(" ")))  // splits AND flattens
-    .collect(Collectors.toList());
-// [Alice, Bob, Charlie, Dave]
-
-// Practical: flatten nested lists
-List<List<Integer>> nested = List.of(
-    List.of(1, 2, 3),
-    List.of(4, 5),
-    List.of(6)
-);
-List<Integer> flat = nested.stream()
-    .flatMap(List::stream)
-    .collect(Collectors.toList());
-// [1, 2, 3, 4, 5, 6]
-
-<h3>The Code</h3>
+<h3>Q16. What is flatMap() and how is it different from map()?</h3>
+ map() applies a function to each element and returns a stream where each input element becomes exactly one output element. flatMap() applies a function that returns a Stream for each element and then flattens all those streams into a single stream. It is essential when each input element naturally expands into multiple outputs — sentences into words, orders into line items, nested lists into flat lists. Without flatMap you'd get a Stream<Stream<T>>, which is rarely useful.
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    // map() — one-to-one: each element becomes one result
+    List<String> names = List.of("Alice Bob", "Charlie Dave");
+    Stream<String[]> arrayStream = names.stream()
+        .map(s -> s.split(" "));  // Stream<String[]> — not flat
+
+    // flatMap() — one-to-many: each element expands into multiple
+    List<String> words = names.stream()
+        .flatMap(s -> Arrays.stream(s.split(" ")))  // splits AND flattens
+        .collect(Collectors.toList());
+    // [Alice, Bob, Charlie, Dave]
+
+    // Practical: flatten nested lists
+    List<List<Integer>> nested = List.of(
+        List.of(1, 2, 3),
+        List.of(4, 5),
+        List.of(6)
+    );
+    List<Integer> flat = nested.stream()
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+    // [1, 2, 3, 4, 5, 6]
+  </code></pre>
 </div>
 
-Q17
-What is the difference between findFirst() and findAny()? When would you choose one over the other?
-Streams
+<h3>Q17. What is the difference between findFirst() and findAny()? When would you choose one over the other?</h3>
 findFirst() always returns the first element in encounter order — this is deterministic even in parallel streams (though it may be slower because threads must coordinate). findAny() returns any element the stream happens to find first — its result can vary in a parallel stream since it just picks whatever thread finishes first. For sequential streams, both behave identically in practice. Use findFirst() when ordering matters; use findAny() in parallel pipelines when you just need any match and want better performance.
-
-List<String> names = List.of("Alice", "Bob", "Charlie", "Anna");
-
-// Sequential — both behave the same
-Optional<String> first = names.stream()
-    .filter(n -> n.startsWith("A"))
-    .findFirst();   // always "Alice" — first in list order
-System.out.println(first.get());  // Alice
-
-Optional<String> any = names.stream()
-    .filter(n -> n.startsWith("A"))
-    .findAny();     // "Alice" in sequential, but not guaranteed
-System.out.println(any.get());    // Alice (sequential)
-
-// In a parallel stream findAny() may return "Anna" or "Alice"
-Optional<String> anyParallel = names.parallelStream()
-    .filter(n -> n.startsWith("A"))
-    .findAny();     // could be Alice or Anna — whichever thread wins
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    List<String> names = List.of("Alice", "Bob", "Charlie", "Anna");
+
+    // Sequential — both behave the same
+    Optional<String> first = names.stream()
+        .filter(n -> n.startsWith("A"))
+        .findFirst();   // always "Alice" — first in list order
+    System.out.println(first.get());  // Alice
+
+    Optional<String> any = names.stream()
+        .filter(n -> n.startsWith("A"))
+        .findAny();     // "Alice" in sequential, but not guaranteed
+    System.out.println(any.get());    // Alice (sequential)
+
+    // In a parallel stream findAny() may return "Anna" or "Alice"
+    Optional<String> anyParallel = names.parallelStream()
+        .filter(n -> n.startsWith("A"))
+        .findAny();     // could be Alice or Anna — whichever thread wins
+  </code></pre>
 </div>
 
-Q18
-What is the reduce() operation? How does it work and when would you use it over collect()?
-Streams
+<h3>Q18. What is the reduce() operation? How does it work and when would you use it over collect()?</h3>
 reduce() folds the elements of a stream into a single result by repeatedly applying a BinaryOperator: it combines the accumulated value with the next element, producing a new accumulator each time. Use reduce() for mathematical aggregations: sum, product, max, min, or concatenation. Use collect() when you need to build a mutable container like a List or Map, because reduce() creates a new immutable intermediate value at each step, making it inefficient for collection building.
-
-List<Integer> numbers = List.of(1, 2, 3, 4, 5);
-
-// Sum with reduce — identity + accumulator
-int sum = numbers.stream()
-    .reduce(0, (acc, n) -> acc + n);
-System.out.println(sum); // 15
-
-// Same with method reference
-int sum2 = numbers.stream().reduce(0, Integer::sum);
-
-// Without identity — returns Optional (stream might be empty)
-Optional<Integer> product = numbers.stream()
-    .reduce((acc, n) -> acc * n);
-product.ifPresent(System.out::println);  // 120
-
-// String concatenation via reduce
-String sentence = Stream.of("Java", "8", "rocks")
-    .reduce("", (a, b) -> a.isEmpty() ? b : a + " " + b);
-System.out.println(sentence);  // Java 8 rocks
-
-// prefer Collectors.joining() for string building — more efficient
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    List<Integer> numbers = List.of(1, 2, 3, 4, 5);
+
+    // Sum with reduce — identity + accumulator
+    int sum = numbers.stream()
+        .reduce(0, (acc, n) -> acc + n);
+    System.out.println(sum); // 15
+
+    // Same with method reference
+    int sum2 = numbers.stream().reduce(0, Integer::sum);
+
+    // Without identity — returns Optional (stream might be empty)
+    Optional<Integer> product = numbers.stream()
+        .reduce((acc, n) -> acc * n);
+    product.ifPresent(System.out::println);  // 120
+
+    // String concatenation via reduce
+    String sentence = Stream.of("Java", "8", "rocks")
+        .reduce("", (a, b) -> a.isEmpty() ? b : a + " " + b);
+    System.out.println(sentence);  // Java 8 rocks
+
+    // prefer Collectors.joining() for string building — more efficient
+  </code></pre>
 </div>
 
-Q19
-What are parallel streams? When should you use them and when should you avoid them?
-Streams
+<h3>Q19. What are parallel streams? When should you use them and when should you avoid them?</h3>
 Calling parallelStream() or stream().parallel() splits the stream into sub-streams, processes them on the ForkJoinPool's worker threads, and merges results. This can speed up CPU-bound operations on large datasets. However, parallel streams have overhead: thread coordination, splitting, and merging. They are NOT always faster. Avoid them for: small datasets (overhead exceeds gain), ordered operations like findFirst() or forEachOrdered(), stateful lambdas (lambdas that share mutable state), or I/O-bound tasks (use async/CompletableFuture instead).
-
-List<Integer> bigList = IntStream.rangeClosed(1, 10_000_000)
-    .boxed()
-    .collect(Collectors.toList());
-
-// Sequential
-long start = System.currentTimeMillis();
-long sumSeq = bigList.stream().mapToLong(Integer::longValue).sum();
-System.out.println("Sequential: " + (System.currentTimeMillis()-start) + "ms");
-
-// Parallel — may be faster for CPU-bound work on large lists
-start = System.currentTimeMillis();
-long sumPar = bigList.parallelStream().mapToLong(Integer::longValue).sum();
-System.out.println("Parallel: " + (System.currentTimeMillis()-start) + "ms");
-
-// WRONG: shared mutable state in parallel stream — race condition!
-List<Integer> results = new ArrayList<>();
-bigList.parallelStream().filter(n -> n%2==0)
-    .forEach(results::add);  // ArrayList is not thread-safe!
-
-// CORRECT: use thread-safe collection
-List<Integer> safe = bigList.parallelStream()
-    .filter(n -> n%2==0)
-    .collect(Collectors.toList());  // Collectors handle merging safely
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    List<Integer> bigList = IntStream.rangeClosed(1, 10_000_000)
+        .boxed()
+        .collect(Collectors.toList());
+
+    // Sequential
+    long start = System.currentTimeMillis();
+    long sumSeq = bigList.stream().mapToLong(Integer::longValue).sum();
+    System.out.println("Sequential: " + (System.currentTimeMillis()-start) + "ms");
+
+    // Parallel — may be faster for CPU-bound work on large lists
+    start = System.currentTimeMillis();
+    long sumPar = bigList.parallelStream().mapToLong(Integer::longValue).sum();
+    System.out.println("Parallel: " + (System.currentTimeMillis()-start) + "ms");
+
+    // WRONG: shared mutable state in parallel stream — race condition!
+    List<Integer> results = new ArrayList<>();
+    bigList.parallelStream().filter(n -> n%2==0)
+        .forEach(results::add);  // ArrayList is not thread-safe!
+    
+    // CORRECT: use thread-safe collection
+    List<Integer> safe = bigList.parallelStream()
+        .filter(n -> n%2==0)
+        .collect(Collectors.toList());  // Collectors handle merging safely
+  </code></pre>
 </div>
 
-Q20
-What is Optional in Java 8? How does it help avoid NullPointerException?
-Other
-Optional is a container that may or may not hold a value. Instead of returning null from a method (and risking NPE), you return Optional.empty() or Optional.of(value). The caller is forced to consciously handle the 'no value' case. Optional integrates beautifully with streams: map(), filter(), flatMap(), ifPresent(), orElse(), orElseGet(), and orElseThrow() let you chain operations safely. However, Optional should be used only as a return type — not for fields, parameters, or collections.
-
-// Old way — caller may forget the null check
-public String findCity(int userId) {
-    User u = db.findUser(userId);
-    return u == null ? null : u.getCity();  // caller must check null
-}
-
-// New way — explicit about possible absence
-public Optional<String> findCity(int userId) {
-    return Optional.ofNullable(db.findUser(userId))
-                   .map(User::getCity);
-}
-
-// Caller must handle both cases
-Optional<String> city = findCity(42);
-
-city.ifPresent(c -> System.out.println("City: " + c));  // runs only if present
-String c1 = city.orElse("Unknown");                     // default value
-String c2 = city.orElseGet(() -> computeDefault());     // lazy default
-String c3 = city.orElseThrow(() -> new UserNotFoundException(42));
-
-// Chaining — like a null-safe pipeline
-Optional.ofNullable(user)
-    .map(User::getAddress)
-    .map(Address::getCity)
-    .filter(c -> !c.isEmpty())
-    .ifPresent(System.out::println);
-
-<h3>The Code</h3>
+<h3>Q20. What is Optional in Java 8? How does it help avoid NullPointerException?</h3>
+Optional<T> is a container that may or may not hold a value. Instead of returning null from a method (and risking NPE), you return Optional.empty() or Optional.of(value). The caller is forced to consciously handle the 'no value' case. Optional integrates beautifully with streams: map(), filter(), flatMap(), ifPresent(), orElse(), orElseGet(), and orElseThrow() let you chain operations safely. However, Optional should be used only as a return type — not for fields, parameters, or collections.
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
+  <pre><code>
+    // Old way — caller may forget the null check
+    public String findCity(int userId) {
+        User u = db.findUser(userId);
+        return u == null ? null : u.getCity();  // caller must check null
     }
-}</code></pre>
+
+    // New way — explicit about possible absence
+    public Optional<String> findCity(int userId) {
+        return Optional.ofNullable(db.findUser(userId))
+                      .map(User::getCity);
+    }
+
+    // Caller must handle both cases
+    Optional<String> city = findCity(42);
+
+    city.ifPresent(c -> System.out.println("City: " + c));  // runs only if present
+    String c1 = city.orElse("Unknown");                     // default value
+    String c2 = city.orElseGet(() -> computeDefault());     // lazy default
+    String c3 = city.orElseThrow(() -> new UserNotFoundException(42));
+
+    // Chaining — like a null-safe pipeline
+    Optional.ofNullable(user)
+        .map(User::getAddress)
+        .map(Address::getCity)
+        .filter(c -> !c.isEmpty())
+        .ifPresent(System.out::println);
+  </code></pre>
 </div>
 
-Q21
-What are the new Date and Time APIs introduced in Java 8? Why were the old Date and Calendar classes problematic?
-Other
+<h3>Q21. What are the new Date and Time APIs introduced in Java 8? Why were the old Date and Calendar classes problematic?</h3>
 The old java.util.Date and java.util.Calendar were mutable, not thread-safe, had confusing month indexing (0 = January), and mixed concerns (Date held both date and time). Java 8 introduced java.time with immutable, thread-safe classes inspired by Joda-Time. LocalDate (date only), LocalTime (time only), LocalDateTime (both), ZonedDateTime (with timezone), Instant (machine timestamp), and Duration/Period for time spans. Operations return new instances — the original is never modified.
-
-// LocalDate — date only, no time, no timezone
-LocalDate today = LocalDate.now();
-LocalDate birthday = LocalDate.of(1995, Month.JUNE, 15);
-long age = ChronoUnit.YEARS.between(birthday, today);
-System.out.println("Age: " + age);
-
-// LocalDateTime — date + time
-LocalDateTime meeting = LocalDateTime.of(2024, 12, 25, 10, 30);
-LocalDateTime nextHour = meeting.plusHours(1);  // immutable — returns new object
-
-// ZonedDateTime — with timezone
-ZonedDateTime nyTime = ZonedDateTime.now(ZoneId.of("America/New_York"));
-
-// Duration — time-based (hours, minutes, seconds)
-Duration d = Duration.between(LocalTime.of(9,0), LocalTime.of(17,30));
-System.out.println(d.toHours() + "h " + d.toMinutesPart() + "m"); // 8h 30m
-
-// Period — date-based (years, months, days)
-Period p = Period.between(birthday, today);
-System.out.println(p.getYears() + " years");
-
-// Formatting
-DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
-System.out.println(today.format(fmt));  // e.g., 27-Jun-2026
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    // LocalDate — date only, no time, no timezone
+    LocalDate today = LocalDate.now();
+    LocalDate birthday = LocalDate.of(1995, Month.JUNE, 15);
+    long age = ChronoUnit.YEARS.between(birthday, today);
+    System.out.println("Age: " + age);
+
+    // LocalDateTime — date + time
+    LocalDateTime meeting = LocalDateTime.of(2024, 12, 25, 10, 30);
+    LocalDateTime nextHour = meeting.plusHours(1);  // immutable — returns new object
+
+    // ZonedDateTime — with timezone
+    ZonedDateTime nyTime = ZonedDateTime.now(ZoneId.of("America/New_York"));
+
+    // Duration — time-based (hours, minutes, seconds)
+    Duration d = Duration.between(LocalTime.of(9,0), LocalTime.of(17,30));
+    System.out.println(d.toHours() + "h " + d.toMinutesPart() + "m"); // 8h 30m
+
+    // Period — date-based (years, months, days)
+    Period p = Period.between(birthday, today);
+    System.out.println(p.getYears() + " years");
+
+    // Formatting
+    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
+    System.out.println(today.format(fmt));  // e.g., 27-Jun-2026
+  </code></pre>
 </div>
 
-Q22
-What is the default method in an interface and how did it help the Java Collections Framework evolve?
-Other
+<h3>Q22. What is the default method in an interface and how did it help the Java Collections Framework evolve?</h3>
 Default methods (covered in interface questions) were the key mechanism that let Java 8 add new methods to existing interfaces without breaking every class that implemented them. The Collections Framework needed to add stream(), forEach(), removeIf(), sort(), and replaceAll() to List, Collection, Map, etc. Without default methods, adding stream() to Collection would have required every List, Set, and Queue implementation — including millions of user-written ones — to implement stream(), which would have been a catastrophic breaking change.
-
-// Java 8 added these as default methods to existing interfaces:
-
-List<String> names = new ArrayList<>(List.of("Charlie", "Alice", "Bob"));
-
-// List.sort() — default method on List (Java 8)
-names.sort(Comparator.naturalOrder());
-System.out.println(names);  // [Alice, Bob, Charlie]
-
-// Collection.removeIf() — default method
-names.removeIf(n -> n.startsWith("A"));
-System.out.println(names);  // [Bob, Charlie]
-
-// Iterable.forEach() — default method
-names.forEach(System.out::println);
-
-// Map.getOrDefault(), computeIfAbsent(), merge() — all default methods
-Map<String, Integer> scores = new HashMap<>();
-scores.put("Alice", 90);
-int bobScore = scores.getOrDefault("Bob", 0);  // 0 — key not present
-
-scores.computeIfAbsent("Charlie", k -> 85);    // only computes if key absent
-scores.merge("Alice", 10, Integer::sum);       // Alice → 90+10 = 100
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    // Java 8 added these as default methods to existing interfaces:
+
+    List<String> names = new ArrayList<>(List.of("Charlie", "Alice", "Bob"));
+
+    // List.sort() — default method on List (Java 8)
+    names.sort(Comparator.naturalOrder());
+    System.out.println(names);  // [Alice, Bob, Charlie]
+
+    // Collection.removeIf() — default method
+    names.removeIf(n -> n.startsWith("A"));
+    System.out.println(names);  // [Bob, Charlie]
+
+    // Iterable.forEach() — default method
+    names.forEach(System.out::println);
+
+    // Map.getOrDefault(), computeIfAbsent(), merge() — all default methods
+    Map<String, Integer> scores = new HashMap<>();
+    scores.put("Alice", 90);
+    int bobScore = scores.getOrDefault("Bob", 0);  // 0 — key not present
+
+    scores.computeIfAbsent("Charlie", k -> 85);    // only computes if key absent
+    scores.merge("Alice", 10, Integer::sum);       // Alice → 90+10 = 100
+  </code></pre>
 </div>
 
-Q23
-What is CompletableFuture in Java 8? How is it better than Future?
-Other
+<h3>Q23. What is CompletableFuture in Java 8? How is it better than Future?</h3>
 Future (from Java 5) lets you submit a task and retrieve the result later with get(). The problem: get() blocks the calling thread, you cannot chain futures together, and there is no way to attach a callback when the result is ready. CompletableFuture solves all of this. It supports non-blocking callbacks (thenApply, thenAccept, thenRun), exception handling (exceptionally, handle), combining multiple futures (thenCombine, allOf, anyOf), and composing dependent async tasks (thenCompose). It is the foundation of non-blocking, reactive-style programming in Java.
-
-// Old Future — blocks on get()
-ExecutorService pool = Executors.newFixedThreadPool(2);
-Future<String> future = pool.submit(() -> fetchFromDb());
-String result = future.get();  // BLOCKS until done — wastes thread
-
-// CompletableFuture — non-blocking, chainable
-CompletableFuture<String> cf = CompletableFuture
-    .supplyAsync(() -> fetchFromDb())          // runs on ForkJoinPool
-    .thenApply(data -> data.toUpperCase())     // transform result
-    .thenApply(data -> "Processed: " + data);
-
-// Non-blocking callback
-cf.thenAccept(System.out::println);  // called when ready — no blocking
-
-// Exception handling
-CompletableFuture<String> safe = CompletableFuture
-    .supplyAsync(() -> riskyCall())
-    .exceptionally(ex -> "Fallback: " + ex.getMessage());
-
-// Combine two independent async tasks
-CompletableFuture<String> user  = CompletableFuture.supplyAsync(() -> getUser());
-CompletableFuture<String> prefs = CompletableFuture.supplyAsync(() -> getPrefs());
-CompletableFuture<String> combined = user.thenCombine(prefs, (u, p) -> u + " | " + p);
-
-<h3>The Code</h3>
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}</code></pre>
+  <pre><code>
+    // Old Future — blocks on get()
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    Future<String> future = pool.submit(() -> fetchFromDb());
+    String result = future.get();  // BLOCKS until done — wastes thread
+
+    // CompletableFuture — non-blocking, chainable
+    CompletableFuture<String> cf = CompletableFuture
+        .supplyAsync(() -> fetchFromDb())          // runs on ForkJoinPool
+        .thenApply(data -> data.toUpperCase())     // transform result
+        .thenApply(data -> "Processed: " + data);
+
+    // Non-blocking callback
+    cf.thenAccept(System.out::println);  // called when ready — no blocking
+
+    // Exception handling
+    CompletableFuture<String> safe = CompletableFuture
+        .supplyAsync(() -> riskyCall())
+        .exceptionally(ex -> "Fallback: " + ex.getMessage());
+
+    // Combine two independent async tasks
+    CompletableFuture<String> user  = CompletableFuture.supplyAsync(() -> getUser());
+    CompletableFuture<String> prefs = CompletableFuture.supplyAsync(() -> getPrefs());
+    CompletableFuture<String> combined = user.thenCombine(prefs, (u, p) -> u + " | " + p);
+  </code></pre>
 </div>
 
-Q24
-What is the StringJoiner and the String.join() method added in Java 8? How do they compare to Collectors.joining()?
-Other
+<h3>Q24. What is the StringJoiner and the String.join() method added in Java 8? How do they compare to Collectors.joining()?</h3>
 Before Java 8, joining strings with a delimiter required looping and manually handling the trailing separator. Java 8 added three approaches. String.join() is the simplest: a static utility for one-shot joining of a few known strings or an iterable. StringJoiner gives you an object you can add to incrementally, with optional prefix/suffix — useful when building a string in a loop. Collectors.joining() is for Stream pipelines. All three produce the same result; pick the one that fits the context.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // String.join() — quick, static, no stream needed
+    String csv = String.join(", ", "Alice", "Bob", "Charlie");
+    System.out.println(csv);  // Alice, Bob, Charlie
 
-// String.join() — quick, static, no stream needed
-String csv = String.join(", ", "Alice", "Bob", "Charlie");
-System.out.println(csv);  // Alice, Bob, Charlie
+    List<String> items = List.of("apple", "banana", "cherry");
+    String joined = String.join(" | ", items);  // apple | banana | cherry
 
-List<String> items = List.of("apple", "banana", "cherry");
-String joined = String.join(" | ", items);  // apple | banana | cherry
+    // StringJoiner — build incrementally with prefix/suffix
+    StringJoiner sj = new StringJoiner(", ", "[", "]");
+    sj.add("one");
+    sj.add("two");
+    sj.add("three");
+    System.out.println(sj.toString());  // [one, two, three]
 
-// StringJoiner — build incrementally with prefix/suffix
-StringJoiner sj = new StringJoiner(", ", "[", "]");
-sj.add("one");
-sj.add("two");
-sj.add("three");
-System.out.println(sj.toString());  // [one, two, three]
+    // StringJoiner handles empty case nicely
+    StringJoiner empty = new StringJoiner(", ", "[", "]");
+    empty.setEmptyValue("NONE");
+    System.out.println(empty.toString());  // NONE — no elements added
 
-// StringJoiner handles empty case nicely
-StringJoiner empty = new StringJoiner(", ", "[", "]");
-empty.setEmptyValue("NONE");
-System.out.println(empty.toString());  // NONE — no elements added
-
-// Collectors.joining() — for streams
-String result = items.stream()
-    .filter(s -> s.length() > 5)
-    .collect(Collectors.joining(", ", "{", "}"));
-System.out.println(result);  // {banana, cherry}
+    // Collectors.joining() — for streams
+    String result = items.stream()
+        .filter(s -> s.length() > 5)
+        .collect(Collectors.joining(", ", "{", "}"));
+    System.out.println(result);  // {banana, cherry}
+  </code></pre>
+</div>
