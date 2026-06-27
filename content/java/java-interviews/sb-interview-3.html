@@ -1,0 +1,432 @@
+<p class="intro">Spring Boot questions on Spring Security</p>
+
+<h3>Q1. What is Spring Security and why is it used?</h3>
+
+Spring Security is a powerful authentication and authorization framework for Spring applications. It protects applications against unauthorized access and common security vulnerabilities. It provides features such as user authentication, role-based authorization, password encoding, CSRF protection, CORS support, session management, and OAuth2/JWT integration.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+            throws Exception {
+
+        http
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().authenticated()
+            )
+            .formLogin();
+
+        return http.build();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q2. What is the difference between Authentication and Authorization?</h3>
+
+Authentication is the process of verifying the identity of a user, such as validating a username and password.
+
+Authorization determines what an authenticated user is allowed to access or perform within the application.
+
+Example:
+- Authentication: Logging into an application.
+- Authorization: Determining whether the logged-in user can access the Admin dashboard.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+http.authorizeHttpRequests(auth -> auth
+        .requestMatchers("/admin/**").hasRole("ADMIN")
+        .requestMatchers("/user/**").hasRole("USER")
+        .anyRequest().authenticated()
+);
+  </code></pre>
+</div>
+
+<h3>Q3. What is SecurityFilterChain in Spring Security?</h3>
+
+`SecurityFilterChain` is the central configuration component in Spring Security 6. It defines how incoming HTTP requests are secured, including authentication mechanisms, authorization rules, login configuration, CSRF settings, and more.
+
+It replaces the deprecated `WebSecurityConfigurerAdapter`.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http)
+        throws Exception {
+
+    http
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().authenticated()
+        )
+        .httpBasic();
+
+    return http.build();
+}
+  </code></pre>
+</div>
+
+<h3>Q4. What is @EnableWebSecurity annotation?</h3>
+
+`@EnableWebSecurity` enables Spring Security's web security support and allows customization of the security configuration. Although Spring Boot automatically configures security in most cases, this annotation is commonly used when defining custom security configurations.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Configuration
+@EnableWebSecurity
+public class SecurityConfiguration {
+
+}
+  </code></pre>
+</div>
+
+<h3>Q5. What is UserDetailsService?</h3>
+
+`UserDetailsService` is a core interface in Spring Security responsible for loading user-specific data during authentication. It contains a single method, `loadUserByUsername()`, which retrieves user information from a database, LDAP, or another data source.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class CustomUserDetailsService
+        implements UserDetailsService {
+
+    @Override
+    public UserDetails loadUserByUsername(String username)
+            throws UsernameNotFoundException {
+
+        return User.withUsername(username)
+                .password("{noop}password")
+                .roles("USER")
+                .build();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q6. What is UserDetails interface?</h3>
+
+`UserDetails` represents an authenticated user in Spring Security. It stores user information such as username, password, roles, and account status.
+
+Spring Security uses this object during authentication and authorization.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+UserDetails user = User.builder()
+        .username("john")
+        .password("{noop}password")
+        .roles("USER")
+        .build();
+  </code></pre>
+</div>
+
+<h3>Q7. What is PasswordEncoder and why is it important?</h3>
+
+`PasswordEncoder` is responsible for securely hashing passwords before storing them and verifying passwords during login.
+
+Passwords should never be stored in plain text. Spring Security recommends using `BCryptPasswordEncoder`.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+}
+  </code></pre>
+</div>
+
+<h3>Q8. Why is BCryptPasswordEncoder commonly used?</h3>
+
+`BCryptPasswordEncoder` uses the BCrypt hashing algorithm, which automatically generates a unique salt for every password and is computationally expensive, making brute-force attacks more difficult.
+
+It is the recommended password encoder in Spring Security.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+PasswordEncoder encoder = new BCryptPasswordEncoder();
+
+String encoded = encoder.encode("admin123");
+
+System.out.println(encoded);
+
+boolean matches = encoder.matches("admin123", encoded);
+System.out.println(matches);
+  </code></pre>
+</div>
+
+<h3>Q9. What is InMemoryUserDetailsManager?</h3>
+
+`InMemoryUserDetailsManager` stores user information in memory instead of a database. It is useful for development, testing, and demo applications but should not be used in production.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Bean
+public UserDetailsService users() {
+
+    UserDetails user = User.builder()
+            .username("admin")
+            .password(passwordEncoder().encode("password"))
+            .roles("ADMIN")
+            .build();
+
+    return new InMemoryUserDetailsManager(user);
+}
+  </code></pre>
+</div>
+
+<h3>Q10. How do you configure Form-Based Authentication in Spring Security?</h3>
+
+Form-based authentication provides a login page where users enter their credentials. Spring Security validates the credentials and creates an authenticated session upon successful login.
+
+Developers can use the default login page or create a custom one.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http)
+        throws Exception {
+
+    http
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().authenticated()
+        )
+        .formLogin(form -> form
+            .loginPage("/login")
+            .permitAll()
+        );
+
+    return http.build();
+}
+  </code></pre>
+</div>
+
+<h3>Q11. What is HTTP Basic Authentication in Spring Security?</h3>
+
+HTTP Basic Authentication is a simple authentication mechanism where the client sends the username and password in the `Authorization` header using Base64 encoding. Since Base64 is not encryption, HTTP Basic should always be used over HTTPS.
+
+It is commonly used for REST APIs, testing, and internal services.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http)
+        throws Exception {
+
+    http
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().authenticated()
+        )
+        .httpBasic();
+
+    return http.build();
+}
+  </code></pre>
+</div>
+
+<h3>Q12. What is JWT Authentication and why is it used?</h3>
+
+JWT (JSON Web Token) is a stateless authentication mechanism where the server generates a signed token after successful authentication. The client includes this token in the `Authorization` header for subsequent requests.
+
+Advantages:
+- Stateless authentication
+- No server-side session storage
+- Suitable for REST APIs and microservices
+- Easy integration with frontend applications
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// Example Authorization Header
+
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  </code></pre>
+</div>
+
+<h3>Q13. What is CSRF protection in Spring Security?</h3>
+
+CSRF (Cross-Site Request Forgery) is an attack where a malicious website tricks a user's browser into performing unwanted actions on another authenticated website.
+
+Spring Security enables CSRF protection by default for web applications using sessions. For stateless REST APIs that use JWT, CSRF protection is typically disabled.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http)
+        throws Exception {
+
+    http
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().authenticated()
+        );
+
+    return http.build();
+}
+  </code></pre>
+</div>
+
+<h3>Q14. What is CORS and how is it configured in Spring Security?</h3>
+
+CORS (Cross-Origin Resource Sharing) allows a web application hosted on one origin to access resources from another origin.
+
+When a frontend application and backend API are hosted on different domains or ports, CORS must be configured to allow cross-origin requests.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http)
+        throws Exception {
+
+    http
+        .cors(Customizer.withDefaults())
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().authenticated()
+        );
+
+    return http.build();
+}
+  </code></pre>
+</div>
+
+<h3>Q15. What is @PreAuthorize annotation?</h3>
+
+`@PreAuthorize` enables method-level security by evaluating a Spring Expression Language (SpEL) expression before executing a method. Access is granted only if the expression evaluates to true.
+
+It provides fine-grained authorization beyond URL-based security.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class EmployeeService {
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteEmployee(Long id) {
+        System.out.println("Employee deleted");
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q16. What is @Secured annotation?</h3>
+
+`@Secured` is another method-level security annotation that restricts method access based on roles. Unlike `@PreAuthorize`, it does not support Spring Expression Language (SpEL) expressions.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class EmployeeService {
+
+    @Secured("ROLE_ADMIN")
+    public void updateEmployee() {
+
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q17. What is the difference between Roles and Authorities?</h3>
+
+A Role is a higher-level concept representing a group of permissions, while an Authority is a specific permission granted to a user.
+
+By convention, Spring Security prefixes roles with `ROLE_`.
+
+Examples:
+- Role: ADMIN
+- Authorities: READ_EMPLOYEE, WRITE_EMPLOYEE, DELETE_EMPLOYEE
+
+A role can contain multiple authorities.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+UserDetails user = User.builder()
+        .username("admin")
+        .password("{noop}password")
+        .roles("ADMIN")
+        .authorities("READ_EMPLOYEE", "WRITE_EMPLOYEE")
+        .build();
+  </code></pre>
+</div>
+
+<h3>Q18. What is AuthenticationManager?</h3>
+
+`AuthenticationManager` is the main interface responsible for authenticating user credentials. It receives an `Authentication` object, validates the credentials using configured authentication providers, and returns an authenticated object upon success.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Autowired
+private AuthenticationManager authenticationManager;
+
+Authentication authentication =
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            "john",
+            "password"
+        )
+    );
+  </code></pre>
+</div>
+
+<h3>Q19. What is OncePerRequestFilter?</h3>
+
+`OncePerRequestFilter` is a Spring Security base class that ensures a filter executes only once for each HTTP request. It is commonly used to validate JWT tokens before the request reaches the controller.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Component
+public class JwtAuthenticationFilter
+        extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain)
+            throws ServletException, IOException {
+
+        // Validate JWT Token
+
+        filterChain.doFilter(request, response);
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q20. What is SecurityContextHolder?</h3>
+
+`SecurityContextHolder` stores the security information of the currently authenticated user. It provides access to the current `Authentication` object, including the username, roles, and authorities.
+
+It is commonly used when application code needs information about the logged-in user.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+Authentication authentication =
+        SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+
+String username = authentication.getName();
+
+System.out.println(username);
+  </code></pre>
+</div>
