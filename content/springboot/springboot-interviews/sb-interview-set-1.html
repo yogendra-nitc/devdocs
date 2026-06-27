@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Spring Boot Interview Questions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+  }
+
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    background: #1e2535;
+    border: 1px solid #2d3748;
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+
+  .stat-chip span {
+    color: #6ee7b7;
+    font-weight: 600;
+  }
+
+  .filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    border: 1px solid #2d3748;
+    background: #1e2535;
+    color: #94a3b8;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { background: #2d3748; color: #e2e8f0; }
+  .filter-btn.active { background: #6ee7b7; color: #0f1117; border-color: #6ee7b7; font-weight: 600; }
+
+  .search-bar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .search-bar input {
+    width: 100%;
+    max-width: 520px;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    border: 1px solid #2d3748;
+    background: #1e2535;
+    color: #e2e8f0;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-bar input:focus { border-color: #6ee7b7; }
+  .search-bar input::placeholder { color: #4a5568; }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .q-card {
+    background: #1a2030;
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .q-card:hover { border-color: #4a5568; }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .q-num {
+    font-size: 0.72rem;
+    color: #4a5568;
+    font-weight: 600;
+    min-width: 28px;
+    padding-top: 2px;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #f1f5f9;
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .badge {
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .badge-core     { background: #1a3a2a; color: #6ee7b7; border: 1px solid #2d6a4f; }
+  .badge-config   { background: #1a2a3a; color: #93c5fd; border: 1px solid #2d4a6a; }
+  .badge-rest     { background: #2a1a3a; color: #c4b5fd; border: 1px solid #5b3a7a; }
+  .badge-data     { background: #3a2a1a; color: #fbbf24; border: 1px solid #7a5a2a; }
+  .badge-testing  { background: #3a1a1a; color: #fca5a5; border: 1px solid #7a2a2a; }
+
+  .chev {
+    color: #4a5568;
+    font-size: 1rem;
+    transition: transform 0.2s;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .chev.open { transform: rotate(180deg); color: #6ee7b7; }
+
+  .q-body {
+    display: none;
+    padding: 0 1.25rem 1.25rem 3rem;
+    border-top: 1px solid #2d3748;
+  }
+
+  .q-body.open { display: block; }
+
+  .q-body p, .q-body > div:not(.code-block) {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    line-height: 1.8;
+    margin-top: 1rem;
+  }
+
+  .code-block {
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #2d3748;
+  }
+
+  .code-label {
+    display: block;
+    background: #0d1117;
+    color: #6ee7b7;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.35rem 1rem;
+    border-bottom: 1px solid #2d3748;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  pre {
+    background: #0d1117;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 0;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #e2e8f0;
+    line-height: 1.65;
+  }
+
+  .kw  { color: #ff79c6; }
+  .cm  { color: #6272a4; font-style: italic; }
+  .an  { color: #8be9fd; }
+  .st  { color: #f1fa8c; }
+  .cl  { color: #50fa7b; }
+  .mt  { color: #f8f8f2; }
+  .nm  { color: #bd93f9; }
+
+  .expand-all-btn {
+    display: block;
+    margin: 0 auto 1.25rem;
+    padding: 0.45rem 1.2rem;
+    border-radius: 8px;
+    border: 1px solid #2d3748;
+    background: transparent;
+    color: #6ee7b7;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .expand-all-btn:hover { background: #1e2535; }
+
+  .no-results {
+    text-align: center;
+    color: #4a5568;
+    padding: 3rem;
+    font-size: 0.9rem;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>🌿 Spring Boot Interview Questions</h1>
+  <p>Entry to Mid-Level · 30 Questions · JPA &amp; Security Excluded</p>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-chip">Total <span>30</span></div>
+  <div class="stat-chip">Core <span>8</span></div>
+  <div class="stat-chip">Configuration <span>7</span></div>
+  <div class="stat-chip">REST <span>7</span></div>
+  <div class="stat-chip">Data <span>4</span></div>
+  <div class="stat-chip">Testing <span>4</span></div>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="setFilter('all', this)">All 30</button>
+  <button class="filter-btn" onclick="setFilter('Core', this)">Core (8)</button>
+  <button class="filter-btn" onclick="setFilter('Configuration', this)">Configuration (7)</button>
+  <button class="filter-btn" onclick="setFilter('REST', this)">REST (7)</button>
+  <button class="filter-btn" onclick="setFilter('Data', this)">Data (4)</button>
+  <button class="filter-btn" onclick="setFilter('Testing', this)">Testing (4)</button>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search questions..." oninput="filterCards()"/>
+</div>
+
+<div class="container">
+  <button class="expand-all-btn" onclick="toggleAll()">Expand All ▾</button>
+  <div class="no-results" id="noResults">No questions match your search.</div>
+
+
+  <!-- ── Q1 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Core">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q1</span>
+      <h3>What is Spring Boot and how is it different from the traditional Spring Framework?</h3>
+      <span class="badge badge-core">Core</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        The traditional Spring Framework is extremely powerful but requires a lot of manual setup — you
+        had to write XML configuration files or Java config classes for every bean, set up a web server,
+        configure the DispatcherServlet, manage dependency versions, and wire everything together yourself.
+        Spring Boot is an opinionated layer on top of Spring that eliminates most of that boilerplate
+        through three core ideas: <strong>auto-configuration</strong> (Spring Boot looks at your classpath
+        and automatically configures beans you would otherwise define manually), <strong>starter
+        dependencies</strong> (curated groups of compatible dependencies bundled under a single artifact
+        like <code>spring-boot-starter-web</code>), and an <strong>embedded server</strong> (Tomcat,
+        Jetty, or Undertow is bundled inside the JAR so you run the app with a plain
+        <code>java -jar</code> command). The result is production-ready apps with minimal configuration
+        and zero XML.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// Traditional Spring — manual DispatcherServlet setup in web.xml + applicationContext.xml</span>
+<span class="cm">// Dozens of XML lines just to start a web app.</span>
+
+<span class="cm">// Spring Boot — this is the ENTIRE entry point of a web application:</span>
+<span class="an">@SpringBootApplication</span>          <span class="cm">// auto-config + component scan + config</span>
+<span class="kw">public class</span> <span class="cl">MyApp</span> {
+    <span class="kw">public static void</span> <span class="mt">main</span>(String[] args) {
+        SpringApplication.<span class="mt">run</span>(<span class="cl">MyApp</span>.<span class="kw">class</span>, args);
+        <span class="cm">// Embedded Tomcat starts, beans wired, app ready — no server install needed</span>
+    }
+}
+
+<span class="cm">// pom.xml — one starter pulls in Spring MVC + embedded Tomcat + JSON support</span>
+<span class="cm">// &lt;dependency&gt;</span>
+<span class="cm">//   &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span>
+<span class="cm">//   &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span>
+<span class="cm">// &lt;/dependency&gt;</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q2 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Core">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q2</span>
+      <h3>What does @SpringBootApplication do? What three annotations does it combine?</h3>
+      <span class="badge badge-core">Core</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>@SpringBootApplication</code> is a convenience meta-annotation that combines three
+        annotations into one. <code>@SpringBootConfiguration</code> marks the class as a source of
+        Spring bean definitions (it is itself a specialisation of <code>@Configuration</code>).
+        <code>@EnableAutoConfiguration</code> tells Spring Boot to automatically configure beans based
+        on the JARs present on the classpath — for example, if <code>spring-boot-starter-web</code>
+        is on the classpath, Spring Boot auto-configures a <code>DispatcherServlet</code> and an
+        embedded Tomcat. <code>@ComponentScan</code> tells Spring to scan the current package and all
+        sub-packages for classes annotated with <code>@Component</code>, <code>@Service</code>,
+        <code>@Repository</code>, <code>@Controller</code>, etc. and register them as beans.
+        Together these three annotations bootstrap the entire application context.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// What @SpringBootApplication expands to internally:</span>
+<span class="an">@SpringBootConfiguration</span>   <span class="cm">// = @Configuration — this class defines beans</span>
+<span class="an">@EnableAutoConfiguration</span>   <span class="cm">// classpath-based auto-config magic</span>
+<span class="an">@ComponentScan</span>             <span class="cm">// scan com.example and all sub-packages</span>
+<span class="kw">public class</span> <span class="cl">Application</span> { }
+
+<span class="cm">// You can customise the scan base packages:</span>
+<span class="an">@SpringBootApplication</span>(scanBasePackages = {<span class="st">"com.myapp.web"</span>, <span class="st">"com.myapp.service"</span>})
+<span class="kw">public class</span> <span class="cl">Application</span> { }
+
+<span class="cm">// Or exclude a specific auto-configuration:</span>
+<span class="an">@SpringBootApplication</span>(exclude = { DataSourceAutoConfiguration.<span class="kw">class</span> })
+<span class="kw">public class</span> <span class="cl">Application</span> { }</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q3 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Core">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q3</span>
+      <h3>What is Spring Boot Auto-Configuration and how does it work under the hood?</h3>
+      <span class="badge badge-core">Core</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Auto-configuration is the mechanism that automatically creates and registers Spring beans based
+        on what is present on the classpath and what properties are set. When
+        <code>@EnableAutoConfiguration</code> is active, Spring Boot loads a list of candidate
+        auto-configuration classes from
+        <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code>
+        (Spring Boot 3.x) or <code>spring.factories</code> (Spring Boot 2.x). Each candidate class is
+        annotated with conditions like <code>@ConditionalOnClass</code>,
+        <code>@ConditionalOnMissingBean</code>, and <code>@ConditionalOnProperty</code>. Only those
+        whose conditions evaluate to true are applied. For example, <code>DataSourceAutoConfiguration</code>
+        fires only if a JDBC driver class is on the classpath AND no <code>DataSource</code> bean is
+        already defined. Your own beans always take precedence over auto-configured ones — you never
+        lose control.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// How an auto-configuration class looks (simplified):</span>
+<span class="an">@AutoConfiguration</span>
+<span class="an">@ConditionalOnClass</span>({ DataSource.<span class="kw">class</span>, EmbeddedDatabaseType.<span class="kw">class</span> })
+<span class="cm">// ↑ only active if these classes exist on the classpath</span>
+<span class="an">@ConditionalOnMissingBean</span>(DataSource.<span class="kw">class</span>)
+<span class="cm">// ↑ backs off if the developer already defined their own DataSource</span>
+<span class="kw">public class</span> <span class="cl">DataSourceAutoConfiguration</span> {
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> DataSource <span class="mt">dataSource</span>() {
+        <span class="kw">return</span> <span class="cm">/* create embedded H2 DataSource */</span>;
+    }
+}
+
+<span class="cm">// See all auto-config decisions at startup (very useful for debugging):</span>
+<span class="cm">// Set in application.properties:</span>
+<span class="cm">// logging.level.org.springframework.boot.autoconfigure=DEBUG</span>
+<span class="cm">// Or run with --debug flag: java -jar myapp.jar --debug</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q4 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Core">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q4</span>
+      <h3>What is Dependency Injection in Spring? What are the three types and which is recommended?</h3>
+      <span class="badge badge-core">Core</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Dependency Injection (DI) is a design pattern where an object's dependencies are provided by
+        the framework rather than created by the object itself. Spring manages this through its IoC
+        (Inversion of Control) container. There are three ways to inject dependencies. <strong>Constructor
+        injection</strong> passes dependencies through the constructor — the recommended approach because
+        it makes dependencies explicit, supports immutability (fields can be <code>final</code>), and
+        makes testing easy (you simply pass mock objects). <strong>Setter injection</strong> uses setter
+        methods — suitable for optional dependencies. <strong>Field injection</strong> uses
+        <code>@Autowired</code> directly on a field — convenient but considered bad practice because it
+        hides dependencies, makes the class harder to test, and requires reflection. Spring's own
+        documentation recommends constructor injection for mandatory dependencies.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// ✅ Constructor Injection — RECOMMENDED</span>
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="cl">OrderService</span> {
+    <span class="kw">private final</span> <span class="cl">PaymentService</span> paymentService;   <span class="cm">// final — immutable</span>
+    <span class="kw">private final</span> <span class="cl">InventoryService</span> inventoryService;
+
+    <span class="cm">// @Autowired is optional when there's only one constructor (Spring 4.3+)</span>
+    <span class="kw">public</span> <span class="cl">OrderService</span>(<span class="cl">PaymentService</span> ps, <span class="cl">InventoryService</span> is) {
+        <span class="kw">this</span>.paymentService   = ps;
+        <span class="kw">this</span>.inventoryService = is;
+    }
+}
+
+<span class="cm">// ⚠️  Setter Injection — for optional dependencies</span>
+<span class="an">@Autowired</span>(required = <span class="kw">false</span>)
+<span class="kw">public void</span> <span class="mt">setEmailService</span>(<span class="cl">EmailService</span> emailService) {
+    <span class="kw">this</span>.emailService = emailService;
+}
+
+<span class="cm">// ❌ Field Injection — avoid, hides dependencies, hard to test</span>
+<span class="an">@Autowired</span>
+<span class="kw">private</span> <span class="cl">PaymentService</span> paymentService;</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q5 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Core">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q5</span>
+      <h3>What is a Spring Bean? What are the different bean scopes available?</h3>
+      <span class="badge badge-core">Core</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        A Spring Bean is any object that is managed by the Spring IoC container — created, wired,
+        and destroyed by Spring rather than by your code using <code>new</code>. You declare beans
+        using <code>@Component</code> (and its specialisations <code>@Service</code>,
+        <code>@Repository</code>, <code>@Controller</code>) or with <code>@Bean</code> inside a
+        <code>@Configuration</code> class. Every bean has a scope that controls how many instances
+        Spring creates and how they are shared. <strong>Singleton</strong> (default) — one instance
+        per application context, shared by all. <strong>Prototype</strong> — a new instance every
+        time the bean is requested. <strong>Request</strong> — one instance per HTTP request (web
+        apps only). <strong>Session</strong> — one instance per HTTP session. <strong>Application</strong>
+        — one instance per ServletContext. Singleton is the right choice for stateless services;
+        prototype is for stateful objects that must not be shared.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// Singleton scope (default) — one shared instance</span>
+<span class="an">@Service</span>                          <span class="cm">// implicitly @Scope("singleton")</span>
+<span class="kw">public class</span> <span class="cl">EmailService</span> { }
+
+<span class="cm">// Prototype scope — new object every time it's injected/requested</span>
+<span class="an">@Component</span>
+<span class="an">@Scope</span>(<span class="st">"prototype"</span>)
+<span class="kw">public class</span> <span class="cl">ReportBuilder</span> { }
+
+<span class="cm">// Request scope — one per HTTP request</span>
+<span class="an">@Component</span>
+<span class="an">@Scope</span>(value = WebApplicationContext.SCOPE_REQUEST,
+       proxyMode = ScopedProxyMode.TARGET_CLASS)
+<span class="kw">public class</span> <span class="cl">RequestContext</span> { }
+
+<span class="cm">// @Bean in a @Configuration class</span>
+<span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="cl">AppConfig</span> {
+    <span class="an">@Bean</span>
+    <span class="an">@Scope</span>(<span class="st">"prototype"</span>)
+    <span class="kw">public</span> <span class="cl">ReportBuilder</span> <span class="mt">reportBuilder</span>() {
+        <span class="kw">return new</span> <span class="cl">ReportBuilder</span>();
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q6 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Core">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q6</span>
+      <h3>What is the Spring Application Context? How is it different from the BeanFactory?</h3>
+      <span class="badge badge-core">Core</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>BeanFactory</code> is the basic IoC container — it can instantiate and wire beans on
+        demand (lazy loading). <code>ApplicationContext</code> extends <code>BeanFactory</code> and
+        adds enterprise-level features: it pre-instantiates all singleton beans at startup (eager
+        loading), supports internationalization via <code>MessageSource</code>, publishes application
+        events to listeners, supports AOP integration, and provides environment/property abstraction.
+        In Spring Boot, the application context is created automatically when
+        <code>SpringApplication.run()</code> is called. For web apps it creates a
+        <code>AnnotationConfigServletWebServerApplicationContext</code> which also starts the embedded
+        web server. You should almost always use <code>ApplicationContext</code> — <code>BeanFactory</code>
+        is only relevant in extremely resource-constrained environments.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// Spring Boot creates and manages the ApplicationContext for you</span>
+<span class="an">@SpringBootApplication</span>
+<span class="kw">public class</span> <span class="cl">MyApp</span> {
+    <span class="kw">public static void</span> <span class="mt">main</span>(String[] args) {
+        ConfigurableApplicationContext ctx =
+            SpringApplication.<span class="mt">run</span>(<span class="cl">MyApp</span>.<span class="kw">class</span>, args);
+
+        <span class="cm">// Access beans programmatically if needed</span>
+        <span class="cl">OrderService</span> svc = ctx.<span class="mt">getBean</span>(<span class="cl">OrderService</span>.<span class="kw">class</span>);
+
+        <span class="cm">// Check if a bean exists</span>
+        <span class="kw">boolean</span> exists = ctx.<span class="mt">containsBean</span>(<span class="st">"orderService"</span>);
+
+        <span class="cm">// Publish a custom event to all listeners</span>
+        ctx.<span class="mt">publishEvent</span>(<span class="kw">new</span> <span class="cl">OrderCreatedEvent</span>(<span class="st">"ORD-001"</span>));
+    }
+}
+
+<span class="cm">// Implementing ApplicationContextAware to access context inside a bean</span>
+<span class="an">@Component</span>
+<span class="kw">public class</span> <span class="cl">BeanInspector</span> <span class="kw">implements</span> <span class="cl">ApplicationContextAware</span> {
+    <span class="kw">private</span> <span class="cl">ApplicationContext</span> context;
+
+    <span class="an">@Override</span>
+    <span class="kw">public void</span> <span class="mt">setApplicationContext</span>(<span class="cl">ApplicationContext</span> ctx) {
+        <span class="kw">this</span>.context = ctx;
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q7 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Core">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q7</span>
+      <h3>What is the difference between @Component, @Service, @Repository, and @Controller?</h3>
+      <span class="badge badge-core">Core</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        All four are specialisations of <code>@Component</code> — at the technical level, they all
+        make a class eligible for component scanning and register it as a Spring bean. The difference
+        is semantic and functional. <code>@Component</code> is a generic stereotype for any
+        Spring-managed component. <code>@Service</code> marks the service/business-logic layer —
+        it has no extra behaviour today but signals intent, making code easier to understand.
+        <code>@Repository</code> marks the data-access layer and additionally enables automatic
+        exception translation — Spring wraps low-level data-access exceptions (like JDBC's
+        <code>SQLException</code>) into Spring's consistent <code>DataAccessException</code>
+        hierarchy. <code>@Controller</code> marks a class as an MVC web controller that handles
+        HTTP requests and returns view names. <code>@RestController</code> combines
+        <code>@Controller</code> and <code>@ResponseBody</code>, making every method return data
+        directly as JSON/XML rather than a view name.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@Component</span>          <span class="cm">// generic — use when no other stereotype fits</span>
+<span class="kw">public class</span> <span class="cl">PasswordEncoder</span> { }
+
+<span class="an">@Service</span>            <span class="cm">// business logic layer</span>
+<span class="kw">public class</span> <span class="cl">OrderService</span> {
+    <span class="kw">public</span> Order <span class="mt">placeOrder</span>(OrderRequest req) { <span class="kw">return new</span> <span class="cl">Order</span>(); }
+}
+
+<span class="an">@Repository</span>         <span class="cm">// data-access layer + exception translation</span>
+<span class="kw">public class</span> <span class="cl">OrderRepository</span> {
+    <span class="kw">public</span> Order <span class="mt">findById</span>(<span class="kw">long</span> id) { <span class="kw">return</span> <span class="cm">/* DB call */</span> <span class="kw">null</span>; }
+    <span class="cm">// SQLException here → auto-translated to DataAccessException</span>
+}
+
+<span class="an">@Controller</span>         <span class="cm">// returns view names (Thymeleaf/JSP)</span>
+<span class="kw">public class</span> <span class="cl">HomeController</span> {
+    <span class="an">@GetMapping</span>(<span class="st">"/"</span>)
+    <span class="kw">public</span> String <span class="mt">home</span>() { <span class="kw">return</span> <span class="st">"index"</span>; }  <span class="cm">// resolves to index.html</span>
+}
+
+<span class="an">@RestController</span>     <span class="cm">// @Controller + @ResponseBody — returns JSON directly</span>
+<span class="kw">public class</span> <span class="cl">ApiController</span> {
+    <span class="an">@GetMapping</span>(<span class="st">"/api/orders"</span>)
+    <span class="kw">public</span> List&lt;Order&gt; <span class="mt">orders</span>() { <span class="kw">return</span> List.<span class="mt">of</span>(); }  <span class="cm">// serialised to JSON</span>
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q8 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Core">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q8</span>
+      <h3>What is Spring AOP? What problems does it solve and what are key AOP concepts?</h3>
+      <span class="badge badge-core">Core</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        AOP (Aspect-Oriented Programming) solves the problem of cross-cutting concerns — behaviour that
+        spans many layers of an application but doesn't belong in any single class: logging, transaction
+        management, security checks, performance monitoring, and caching. Without AOP, this code gets
+        copy-pasted into every service method. Key concepts: a <strong>Join Point</strong> is a specific
+        point in execution (a method call). A <strong>Pointcut</strong> is an expression that matches
+        a set of join points. An <strong>Advice</strong> is the code to run at matched join points
+        (<code>@Before</code>, <code>@After</code>, <code>@Around</code>, <code>@AfterReturning</code>,
+        <code>@AfterThrowing</code>). An <strong>Aspect</strong> is a class that groups pointcuts and
+        advice. Spring AOP works via dynamic proxies — it wraps your bean in a proxy that intercepts
+        calls. This means AOP only intercepts calls that go through Spring's proxy, not internal
+        <code>this.method()</code> calls.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@Aspect</span>
+<span class="an">@Component</span>
+<span class="kw">public class</span> <span class="cl">LoggingAspect</span> {
+
+    <span class="cm">// Pointcut: matches all methods in the service package</span>
+    <span class="an">@Pointcut</span>(<span class="st">"execution(* com.example.service.*.*(..))"</span>)
+    <span class="kw">public void</span> <span class="mt">serviceMethods</span>() { }
+
+    <span class="cm">// @Before advice — runs BEFORE the matched method</span>
+    <span class="an">@Before</span>(<span class="st">"serviceMethods()"</span>)
+    <span class="kw">public void</span> <span class="mt">logBefore</span>(JoinPoint jp) {
+        System.out.<span class="mt">println</span>(<span class="st">"Calling: "</span> + jp.<span class="mt">getSignature</span>().<span class="mt">getName</span>());
+    }
+
+    <span class="cm">// @Around advice — wraps the method, controls execution</span>
+    <span class="an">@Around</span>(<span class="st">"serviceMethods()"</span>)
+    <span class="kw">public</span> Object <span class="mt">measureTime</span>(ProceedingJoinPoint pjp) <span class="kw">throws</span> Throwable {
+        <span class="kw">long</span> start = System.<span class="mt">currentTimeMillis</span>();
+        Object result = pjp.<span class="mt">proceed</span>();   <span class="cm">// invoke actual method</span>
+        <span class="kw">long</span> elapsed = System.<span class="mt">currentTimeMillis</span>() - start;
+        System.out.<span class="mt">println</span>(<span class="st">"Took: "</span> + elapsed + <span class="st">"ms"</span>);
+        <span class="kw">return</span> result;
+    }
+
+    <span class="cm">// @AfterThrowing — runs if the method throws an exception</span>
+    <span class="an">@AfterThrowing</span>(pointcut = <span class="st">"serviceMethods()"</span>, throwing = <span class="st">"ex"</span>)
+    <span class="kw">public void</span> <span class="mt">logError</span>(Exception ex) {
+        System.out.<span class="mt">println</span>(<span class="st">"Exception: "</span> + ex.<span class="mt">getMessage</span>());
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q9 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Configuration">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q9</span>
+      <h3>What is application.properties vs application.yml? What is the difference and which should you use?</h3>
+      <span class="badge badge-config">Configuration</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Both files serve the same purpose — externalising configuration — and Spring Boot supports
+        both equally. <code>application.properties</code> uses a flat key=value format, which is
+        simple and widely familiar. <code>application.yml</code> uses YAML's hierarchical indented
+        format, which is more readable for deeply nested properties because you avoid repeating the
+        common prefix. For example, three <code>spring.datasource.*</code> properties in
+        <code>.properties</code> format become a single indented <code>datasource:</code> block in
+        YAML. YAML also supports lists more naturally. The downside of YAML is that indentation errors
+        cause subtle bugs and it cannot be easily concatenated the way multiple <code>.properties</code>
+        files can. Choose based on team preference — many projects use <code>.yml</code> for the clean
+        hierarchy it provides.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// --- application.properties (flat key=value) ---</span>
+<span class="cm">// server.port=8081</span>
+<span class="cm">// spring.datasource.url=jdbc:mysql://localhost:3306/mydb</span>
+<span class="cm">// spring.datasource.username=root</span>
+<span class="cm">// spring.datasource.password=secret</span>
+<span class="cm">// spring.jpa.hibernate.ddl-auto=update</span>
+
+<span class="cm">// --- application.yml (hierarchical, less repetition) ---</span>
+<span class="cm">// server:</span>
+<span class="cm">//   port: 8081</span>
+<span class="cm">// spring:</span>
+<span class="cm">//   datasource:</span>
+<span class="cm">//     url: jdbc:mysql://localhost:3306/mydb</span>
+<span class="cm">//     username: root</span>
+<span class="cm">//     password: secret</span>
+<span class="cm">//   jpa:</span>
+<span class="cm">//     hibernate:</span>
+<span class="cm">//       ddl-auto: update</span>
+
+<span class="cm">// Reading properties in Java using @Value</span>
+<span class="an">@Component</span>
+<span class="kw">public class</span> <span class="cl">AppConfig</span> {
+    <span class="an">@Value</span>(<span class="st">"${server.port}"</span>)
+    <span class="kw">private int</span> serverPort;
+
+    <span class="an">@Value</span>(<span class="st">"${app.name:MyDefaultApp}"</span>)  <span class="cm">// :MyDefaultApp is the fallback</span>
+    <span class="kw">private</span> String appName;
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q10 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Configuration">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q10</span>
+      <h3>What is @ConfigurationProperties? How is it better than @Value for binding configuration?</h3>
+      <span class="badge badge-config">Configuration</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>@Value</code> injects one property at a time and requires you to repeat the full key
+        string in every class that uses it. If a prefix changes, you update it everywhere.
+        <code>@ConfigurationProperties</code> binds an entire group of related properties to a POJO
+        at once using a shared prefix. All fields in the class are automatically mapped by name. This
+        gives you type safety (the IDE validates property names), supports complex types like
+        <code>List</code>, <code>Map</code>, and nested objects, enables IDE auto-completion in
+        <code>.properties</code>/<code>.yml</code> files (with the metadata processor), and makes
+        the configuration self-documenting. It also works well with <code>@Validated</code> for
+        bean-validation constraints on properties.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// application.yml</span>
+<span class="cm">// app:</span>
+<span class="cm">//   name: MyShop</span>
+<span class="cm">//   max-retries: 3</span>
+<span class="cm">//   allowed-origins:</span>
+<span class="cm">//     - https://frontend.com</span>
+<span class="cm">//     - https://admin.com</span>
+
+<span class="cm">// @ConfigurationProperties POJO — all fields bound automatically</span>
+<span class="an">@ConfigurationProperties</span>(prefix = <span class="st">"app"</span>)
+<span class="an">@Validated</span>
+<span class="kw">public class</span> <span class="cl">AppProperties</span> {
+
+    <span class="an">@NotBlank</span>
+    <span class="kw">private</span> String name;
+
+    <span class="an">@Min</span>(<span class="nm">1</span>) <span class="an">@Max</span>(<span class="nm">10</span>)
+    <span class="kw">private int</span> maxRetries;
+
+    <span class="kw">private</span> List&lt;String&gt; allowedOrigins;
+
+    <span class="cm">// getters and setters (or use Lombok @Data)</span>
+}
+
+<span class="cm">// Enable it in your main class or config:</span>
+<span class="an">@SpringBootApplication</span>
+<span class="an">@EnableConfigurationProperties</span>(<span class="cl">AppProperties</span>.<span class="kw">class</span>)
+<span class="kw">public class</span> <span class="cl">Application</span> { }
+
+<span class="cm">// Inject and use it anywhere:</span>
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="cl">StartupService</span> {
+    <span class="kw">private final</span> <span class="cl">AppProperties</span> props;
+
+    <span class="kw">public</span> <span class="cl">StartupService</span>(<span class="cl">AppProperties</span> props) { <span class="kw">this</span>.props = props; }
+
+    <span class="kw">public void</span> <span class="mt">start</span>() {
+        System.out.<span class="mt">println</span>(<span class="st">"Starting: "</span> + props.<span class="mt">getName</span>());
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q11 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Configuration">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q11</span>
+      <h3>What are Spring Profiles? How do you activate them and use them for environment-specific configuration?</h3>
+      <span class="badge badge-config">Configuration</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Spring Profiles allow you to segregate parts of your application configuration and make them
+        available only in certain environments — dev, test, staging, prod. You define profile-specific
+        property files as <code>application-{profile}.yml</code> (e.g., <code>application-dev.yml</code>,
+        <code>application-prod.yml</code>). At startup, the active profile's properties override the
+        defaults in <code>application.yml</code>. You can also annotate beans with
+        <code>@Profile("dev")</code> so they are only registered when that profile is active — useful
+        for swapping out mock services for real ones. Profiles are activated via
+        <code>spring.profiles.active</code> in the property file, as a JVM argument
+        <code>-Dspring.profiles.active=prod</code>, or as an environment variable
+        <code>SPRING_PROFILES_ACTIVE=prod</code>.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// application.yml — base (all environments)</span>
+<span class="cm">// app.name: MyApp</span>
+<span class="cm">// server.port: 8080</span>
+
+<span class="cm">// application-dev.yml — overrides for dev</span>
+<span class="cm">// server.port: 9090</span>
+<span class="cm">// logging.level.com.example: DEBUG</span>
+
+<span class="cm">// application-prod.yml — overrides for prod</span>
+<span class="cm">// server.port: 443</span>
+<span class="cm">// logging.level.com.example: WARN</span>
+
+<span class="cm">// Activate dev profile (3 ways):</span>
+<span class="cm">// 1. application.yml: spring.profiles.active: dev</span>
+<span class="cm">// 2. JVM arg: java -Dspring.profiles.active=prod -jar app.jar</span>
+<span class="cm">// 3. Env var: export SPRING_PROFILES_ACTIVE=prod</span>
+
+<span class="cm">// Profile-specific beans — only registered in 'dev' profile</span>
+<span class="an">@Component</span>
+<span class="an">@Profile</span>(<span class="st">"dev"</span>)
+<span class="kw">public class</span> <span class="cl">MockEmailService</span> <span class="kw">implements</span> <span class="cl">EmailService</span> {
+    <span class="kw">public void</span> <span class="mt">send</span>(String to, String body) {
+        System.out.<span class="mt">println</span>(<span class="st">"[DEV] Fake email to: "</span> + to);
+    }
+}
+
+<span class="an">@Component</span>
+<span class="an">@Profile</span>(<span class="st">"prod"</span>)
+<span class="kw">public class</span> <span class="cl">SmtpEmailService</span> <span class="kw">implements</span> <span class="cl">EmailService</span> {
+    <span class="kw">public void</span> <span class="mt">send</span>(String to, String body) { <span class="cm">/* real SMTP */</span> }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q12 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Configuration">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q12</span>
+      <h3>What is the Spring Boot Actuator? What does it provide out of the box?</h3>
+      <span class="badge badge-config">Configuration</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Spring Boot Actuator adds production-ready monitoring and management endpoints to your
+        application without writing any code. Add the <code>spring-boot-starter-actuator</code>
+        dependency and you get HTTP endpoints (and JMX) that expose operational information.
+        Key endpoints: <code>/actuator/health</code> — reports if the app is UP or DOWN (and
+        details about DB, disk, cache). <code>/actuator/info</code> — app metadata (version, build).
+        <code>/actuator/metrics</code> — JVM memory, CPU, HTTP request counts, etc.
+        <code>/actuator/env</code> — all configuration properties. <code>/actuator/beans</code> —
+        all registered Spring beans. <code>/actuator/loggers</code> — view and dynamically change
+        log levels at runtime. Most endpoints are disabled by default for security — you explicitly
+        expose them via <code>management.endpoints.web.exposure.include</code>.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// pom.xml dependency:</span>
+<span class="cm">// &lt;dependency&gt;</span>
+<span class="cm">//   &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span>
+<span class="cm">//   &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;</span>
+<span class="cm">// &lt;/dependency&gt;</span>
+
+<span class="cm">// application.yml — expose specific endpoints</span>
+<span class="cm">// management:</span>
+<span class="cm">//   endpoints:</span>
+<span class="cm">//     web:</span>
+<span class="cm">//       exposure:</span>
+<span class="cm">//         include: health,info,metrics,loggers</span>
+<span class="cm">//   endpoint:</span>
+<span class="cm">//     health:</span>
+<span class="cm">//       show-details: always</span>
+
+<span class="cm">// Custom Health Indicator — plugs into /actuator/health</span>
+<span class="an">@Component</span>
+<span class="kw">public class</span> <span class="cl">ExternalApiHealthIndicator</span> <span class="kw">implements</span> <span class="cl">HealthIndicator</span> {
+    <span class="an">@Override</span>
+    <span class="kw">public</span> Health <span class="mt">health</span>() {
+        <span class="kw">boolean</span> apiReachable = <span class="mt">pingExternalApi</span>();
+        <span class="kw">return</span> apiReachable
+            ? Health.<span class="mt">up</span>().<span class="mt">withDetail</span>(<span class="st">"api"</span>, <span class="st">"reachable"</span>).<span class="mt">build</span>()
+            : Health.<span class="mt">down</span>().<span class="mt">withDetail</span>(<span class="st">"api"</span>, <span class="st">"unreachable"</span>).<span class="mt">build</span>();
+    }
+    <span class="kw">private boolean</span> <span class="mt">pingExternalApi</span>() { <span class="kw">return true</span>; <span class="cm">/* real check */</span> }
+}
+
+<span class="cm">// GET /actuator/health → {"status":"UP","components":{"externalApi":{"status":"UP"}}}</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q13 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Configuration">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q13</span>
+      <h3>What is the Spring Boot DevTools and what does it offer during development?</h3>
+      <span class="badge badge-config">Configuration</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Spring Boot DevTools is a development-time module that makes your development loop faster.
+        Its headline feature is <strong>automatic restart</strong> — whenever a class on the classpath
+        changes, DevTools restarts the application context in milliseconds by using two classloaders:
+        a base classloader for third-party libraries (rarely changes) and a restart classloader for
+        your classes (changes often). Only the restart classloader is reloaded, making restarts much
+        faster than a cold start. DevTools also enables <strong>LiveReload</strong> — a browser
+        extension that refreshes the page automatically when static resources (HTML, CSS, JS) change.
+        Additionally, it changes several defaults suitable for dev: disables template caching (so
+        Thymeleaf changes are visible immediately), sets the logging level to DEBUG, and enables
+        H2 console. DevTools is automatically disabled when running a packaged JAR in production.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// pom.xml — add DevTools (automatically excluded from production JAR)</span>
+<span class="cm">// &lt;dependency&gt;</span>
+<span class="cm">//   &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span>
+<span class="cm">//   &lt;artifactId&gt;spring-boot-devtools&lt;/artifactId&gt;</span>
+<span class="cm">//   &lt;optional&gt;true&lt;/optional&gt;   ← not inherited by downstream projects</span>
+<span class="cm">// &lt;/dependency&gt;</span>
+
+<span class="cm">// application.properties — DevTools sets these defaults automatically in dev:</span>
+<span class="cm">// spring.thymeleaf.cache=false         (see template changes immediately)</span>
+<span class="cm">// spring.web.resources.cache.period=0  (no static resource caching)</span>
+<span class="cm">// logging.level.web=DEBUG</span>
+
+<span class="cm">// Customise which paths trigger a restart:</span>
+<span class="cm">// spring.devtools.restart.additional-paths=src/main/resources/templates</span>
+<span class="cm">// spring.devtools.restart.exclude=static/**,public/**</span>
+
+<span class="cm">// Trigger file — restart only when this file changes (useful in IntelliJ)</span>
+<span class="cm">// spring.devtools.restart.trigger-file=.reloadtrigger</span>
+
+<span class="cm">// DevTools is DISABLED when:</span>
+<span class="cm">// - Running a fully packaged JAR: java -jar myapp.jar</span>
+<span class="cm">// - When spring.devtools.restart.enabled=false is set</span>
+<span class="cm">// - System property: spring.devtools.restart.enabled=false</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q14 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Configuration">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q14</span>
+      <h3>What are the @Conditional annotations? How do they control bean registration?</h3>
+      <span class="badge badge-config">Configuration</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>@Conditional</code> annotations tell Spring to register a bean only when a specific
+        condition is true at application startup. They are the backbone of auto-configuration.
+        Common ones: <code>@ConditionalOnClass</code> — register only if a specific class is on the
+        classpath (e.g., only configure Redis if Jedis is present). <code>@ConditionalOnMissingBean</code>
+        — register only if no bean of that type is already defined (lets user override the default).
+        <code>@ConditionalOnProperty</code> — register only if a property has a specific value.
+        <code>@ConditionalOnMissingClass</code> — opposite of OnClass. <code>@ConditionalOnBean</code>
+        — register only if another specific bean already exists. These annotations let you write
+        smart, adaptive configuration that responds to the runtime environment.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// Register CacheService only if Caffeine library is on the classpath</span>
+<span class="an">@Bean</span>
+<span class="an">@ConditionalOnClass</span>(name = <span class="st">"com.github.benmanes.caffeine.cache.Caffeine"</span>)
+<span class="kw">public</span> <span class="cl">CacheService</span> <span class="mt">caffeineCacheService</span>() {
+    <span class="kw">return new</span> <span class="cl">CaffeineCacheService</span>();
+}
+
+<span class="cm">// Provide a default bean only if the developer hasn't defined their own</span>
+<span class="an">@Bean</span>
+<span class="an">@ConditionalOnMissingBean</span>(<span class="cl">EmailService</span>.<span class="kw">class</span>)
+<span class="kw">public</span> <span class="cl">EmailService</span> <span class="mt">defaultEmailService</span>() {
+    <span class="kw">return new</span> <span class="cl">ConsoleEmailService</span>();
+}
+
+<span class="cm">// Register a bean only when a property is set to a specific value</span>
+<span class="an">@Bean</span>
+<span class="an">@ConditionalOnProperty</span>(name = <span class="st">"feature.dark-mode"</span>, havingValue = <span class="st">"true"</span>,
+                        matchIfMissing = <span class="kw">false</span>)
+<span class="kw">public</span> <span class="cl">DarkModeService</span> <span class="mt">darkModeService</span>() {
+    <span class="kw">return new</span> <span class="cl">DarkModeService</span>();
+}
+
+<span class="cm">// Custom condition — implement Condition interface</span>
+<span class="kw">public class</span> <span class="cl">LinuxCondition</span> <span class="kw">implements</span> <span class="cl">Condition</span> {
+    <span class="an">@Override</span>
+    <span class="kw">public boolean</span> <span class="mt">matches</span>(ConditionContext ctx, AnnotatedTypeMetadata meta) {
+        <span class="kw">return</span> System.<span class="mt">getProperty</span>(<span class="st">"os.name"</span>).<span class="mt">contains</span>(<span class="st">"Linux"</span>);
+    }
+}
+
+<span class="an">@Bean</span>
+<span class="an">@Conditional</span>(<span class="cl">LinuxCondition</span>.<span class="kw">class</span>)
+<span class="kw">public</span> <span class="cl">LinuxFileWatcher</span> <span class="mt">fileWatcher</span>() { <span class="kw">return new</span> <span class="cl">LinuxFileWatcher</span>(); }</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q15 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Configuration">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q15</span>
+      <h3>What is the difference between @Bean and @Component? When do you use each?</h3>
+      <span class="badge badge-config">Configuration</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>@Component</code> is a class-level annotation — you put it on a class you own and
+        control the source code of. Spring detects it via component scanning and registers an
+        instance as a bean. <code>@Bean</code> is a method-level annotation placed inside a
+        <code>@Configuration</code> class — the method's return value becomes the bean. You use
+        <code>@Bean</code> when: (1) you need to register a third-party class as a bean (you cannot
+        add <code>@Component</code> to code you don't own — e.g., an <code>ObjectMapper</code> from
+        Jackson), (2) you need complex construction logic (builder patterns, conditional setup), or
+        (3) you want to control the bean name, scope, or init/destroy methods explicitly.
+        <code>@Component</code> is simpler and preferred for your own classes.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// @Component — on a class YOU own. Spring detects via component scan.</span>
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="cl">OrderService</span> {
+    <span class="kw">public</span> Order <span class="mt">process</span>(OrderRequest req) { <span class="kw">return new</span> <span class="cl">Order</span>(); }
+}
+
+<span class="cm">// @Bean — for third-party classes or complex wiring</span>
+<span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="cl">InfraConfig</span> {
+
+    <span class="cm">// Jackson's ObjectMapper — can't add @Component to it</span>
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> ObjectMapper <span class="mt">objectMapper</span>() {
+        <span class="kw">return new</span> ObjectMapper()
+            .<span class="mt">enable</span>(SerializationFeature.INDENT_OUTPUT)
+            .<span class="mt">disable</span>(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    }
+
+    <span class="cm">// RestTemplate — third-party, needs custom config</span>
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> RestTemplate <span class="mt">restTemplate</span>() {
+        RestTemplate rt = <span class="kw">new</span> RestTemplate();
+        rt.<span class="mt">setErrorHandler</span>(<span class="kw">new</span> <span class="cl">CustomErrorHandler</span>());
+        <span class="kw">return</span> rt;
+    }
+
+    <span class="cm">// Named bean, custom init/destroy</span>
+    <span class="an">@Bean</span>(name = <span class="st">"primaryCache"</span>, initMethod = <span class="st">"init"</span>, destroyMethod = <span class="st">"shutdown"</span>)
+    <span class="kw">public</span> <span class="cl">CacheManager</span> <span class="mt">cacheManager</span>() {
+        <span class="kw">return new</span> <span class="cl">RedisCacheManager</span>();
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q16 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="REST">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q16</span>
+      <h3>What is a RESTful API? How does Spring Boot support building one?</h3>
+      <span class="badge badge-rest">REST</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        REST (Representational State Transfer) is an architectural style for designing networked
+        APIs. The core principles are: statelessness (each request is self-contained), resource
+        identification via URLs, HTTP verbs that represent actions (GET = read, POST = create,
+        PUT = full update, PATCH = partial update, DELETE = remove), and uniform response formats
+        (typically JSON). Spring Boot supports REST APIs through Spring MVC:
+        <code>@RestController</code> marks a class whose methods return response bodies directly
+        (not view names). <code>@RequestMapping</code> and its shortcuts (<code>@GetMapping</code>,
+        <code>@PostMapping</code>, <code>@PutMapping</code>, <code>@DeleteMapping</code>) map
+        HTTP requests to methods. Jackson auto-serializes return objects to JSON without any
+        configuration.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@RestController</span>                          <span class="cm">// @Controller + @ResponseBody</span>
+<span class="an">@RequestMapping</span>(<span class="st">"/api/products"</span>)          <span class="cm">// base URL for all methods</span>
+<span class="kw">public class</span> <span class="cl">ProductController</span> {
+
+    <span class="kw">private final</span> <span class="cl">ProductService</span> productService;
+
+    <span class="kw">public</span> <span class="cl">ProductController</span>(<span class="cl">ProductService</span> ps) { <span class="kw">this</span>.productService = ps; }
+
+    <span class="an">@GetMapping</span>                              <span class="cm">// GET /api/products</span>
+    <span class="kw">public</span> List&lt;Product&gt; <span class="mt">getAll</span>() {
+        <span class="kw">return</span> productService.<span class="mt">findAll</span>();      <span class="cm">// serialised to JSON array</span>
+    }
+
+    <span class="an">@GetMapping</span>(<span class="st">"/{id}"</span>)                   <span class="cm">// GET /api/products/42</span>
+    <span class="kw">public</span> Product <span class="mt">getById</span>(<span class="an">@PathVariable</span> Long id) {
+        <span class="kw">return</span> productService.<span class="mt">findById</span>(id);
+    }
+
+    <span class="an">@PostMapping</span>                             <span class="cm">// POST /api/products</span>
+    <span class="an">@ResponseStatus</span>(HttpStatus.CREATED)      <span class="cm">// returns 201</span>
+    <span class="kw">public</span> Product <span class="mt">create</span>(<span class="an">@RequestBody</span> <span class="an">@Valid</span> Product product) {
+        <span class="kw">return</span> productService.<span class="mt">save</span>(product);
+    }
+
+    <span class="an">@DeleteMapping</span>(<span class="st">"/{id}"</span>)               <span class="cm">// DELETE /api/products/42</span>
+    <span class="an">@ResponseStatus</span>(HttpStatus.NO_CONTENT)  <span class="cm">// returns 204</span>
+    <span class="kw">public void</span> <span class="mt">delete</span>(<span class="an">@PathVariable</span> Long id) {
+        productService.<span class="mt">delete</span>(id);
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q17 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="REST">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q17</span>
+      <h3>What is the difference between @PathVariable, @RequestParam, and @RequestBody?</h3>
+      <span class="badge badge-rest">REST</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        These three annotations extract different parts of an HTTP request. <code>@PathVariable</code>
+        extracts a value embedded in the URL path — it is part of the URL structure itself (e.g.,
+        <code>/users/42</code> where 42 identifies the resource). <code>@RequestParam</code>
+        extracts a query parameter from the URL's query string (e.g., <code>/users?page=2&amp;size=10</code>).
+        It can be made optional with a default value. <code>@RequestBody</code> deserialises the
+        entire HTTP request body (typically JSON) into a Java object using Jackson. It is used with
+        POST/PUT requests where you send structured data. A single method can use all three together.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@RestController</span>
+<span class="an">@RequestMapping</span>(<span class="st">"/api/users"</span>)
+<span class="kw">public class</span> <span class="cl">UserController</span> {
+
+    <span class="cm">// @PathVariable — value is part of the URL path</span>
+    <span class="cm">// GET /api/users/42</span>
+    <span class="an">@GetMapping</span>(<span class="st">"/{id}"</span>)
+    <span class="kw">public</span> User <span class="mt">getById</span>(<span class="an">@PathVariable</span> Long id) {
+        <span class="kw">return</span> userService.<span class="mt">findById</span>(id);
+    }
+
+    <span class="cm">// @RequestParam — query parameters after '?'</span>
+    <span class="cm">// GET /api/users?page=0&amp;size=10&amp;sort=name</span>
+    <span class="an">@GetMapping</span>
+    <span class="kw">public</span> Page&lt;User&gt; <span class="mt">getAll</span>(
+            <span class="an">@RequestParam</span>(defaultValue = <span class="st">"0"</span>)   <span class="kw">int</span> page,
+            <span class="an">@RequestParam</span>(defaultValue = <span class="st">"10"</span>)  <span class="kw">int</span> size,
+            <span class="an">@RequestParam</span>(required = <span class="kw">false</span>)     String sort) {
+        <span class="kw">return</span> userService.<span class="mt">findAll</span>(page, size, sort);
+    }
+
+    <span class="cm">// @RequestBody — deserialises JSON body into a Java object</span>
+    <span class="cm">// POST /api/users   with body: {"name":"Alice","email":"alice@example.com"}</span>
+    <span class="an">@PostMapping</span>
+    <span class="kw">public</span> User <span class="mt">create</span>(<span class="an">@RequestBody</span> <span class="an">@Valid</span> CreateUserRequest request) {
+        <span class="kw">return</span> userService.<span class="mt">create</span>(request);
+    }
+
+    <span class="cm">// All three combined: PUT /api/users/42?notify=true + JSON body</span>
+    <span class="an">@PutMapping</span>(<span class="st">"/{id}"</span>)
+    <span class="kw">public</span> User <span class="mt">update</span>(<span class="an">@PathVariable</span> Long id,
+                        <span class="an">@RequestParam</span>(defaultValue = <span class="st">"false"</span>) <span class="kw">boolean</span> notify,
+                        <span class="an">@RequestBody</span> UpdateUserRequest req) {
+        <span class="kw">return</span> userService.<span class="mt">update</span>(id, req, notify);
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q18 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="REST">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q18</span>
+      <h3>What is ResponseEntity? Why is it useful and when should you use it?</h3>
+      <span class="badge badge-rest">REST</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>ResponseEntity&lt;T&gt;</code> gives you full control over the HTTP response — the status
+        code, headers, and body — in a single return value. When you return a plain object from a
+        controller method, Spring always uses 200 OK and no custom headers. But REST APIs need to
+        return 201 Created with a <code>Location</code> header after creation, 404 Not Found when
+        a resource is missing, 204 No Content on deletion, and custom headers for pagination, rate
+        limiting, etc. <code>ResponseEntity</code> makes all of this possible without needing
+        <code>HttpServletResponse</code>. It is particularly important for building APIs that follow
+        HTTP semantics properly.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@RestController</span>
+<span class="an">@RequestMapping</span>(<span class="st">"/api/orders"</span>)
+<span class="kw">public class</span> <span class="cl">OrderController</span> {
+
+    <span class="cm">// Return 200 OK with body — ResponseEntity wraps it</span>
+    <span class="an">@GetMapping</span>(<span class="st">"/{id}"</span>)
+    <span class="kw">public</span> ResponseEntity&lt;Order&gt; <span class="mt">getOrder</span>(<span class="an">@PathVariable</span> Long id) {
+        <span class="kw">return</span> orderService.<span class="mt">findById</span>(id)
+            .<span class="mt">map</span>(ResponseEntity::<span class="mt">ok</span>)                          <span class="cm">// 200 if found</span>
+            .<span class="mt">orElse</span>(ResponseEntity.<span class="mt">notFound</span>().<span class="mt">build</span>());       <span class="cm">// 404 if not</span>
+    }
+
+    <span class="cm">// 201 Created with Location header pointing to new resource</span>
+    <span class="an">@PostMapping</span>
+    <span class="kw">public</span> ResponseEntity&lt;Order&gt; <span class="mt">create</span>(<span class="an">@RequestBody</span> OrderRequest req,
+                                           UriComponentsBuilder ucb) {
+        Order saved = orderService.<span class="mt">create</span>(req);
+        URI location = ucb.<span class="mt">path</span>(<span class="st">"/api/orders/{id}"</span>)
+                          .<span class="mt">buildAndExpand</span>(saved.<span class="mt">getId</span>()).<span class="mt">toUri</span>();
+        <span class="kw">return</span> ResponseEntity.<span class="mt">created</span>(location).<span class="mt">body</span>(saved);   <span class="cm">// 201 + Location</span>
+    }
+
+    <span class="cm">// 204 No Content on delete</span>
+    <span class="an">@DeleteMapping</span>(<span class="st">"/{id}"</span>)
+    <span class="kw">public</span> ResponseEntity&lt;Void&gt; <span class="mt">delete</span>(<span class="an">@PathVariable</span> Long id) {
+        orderService.<span class="mt">delete</span>(id);
+        <span class="kw">return</span> ResponseEntity.<span class="mt">noContent</span>().<span class="mt">build</span>();             <span class="cm">// 204</span>
+    }
+
+    <span class="cm">// Custom headers — e.g., rate limit info</span>
+    <span class="an">@GetMapping</span>
+    <span class="kw">public</span> ResponseEntity&lt;List&lt;Order&gt;&gt; <span class="mt">getAll</span>() {
+        <span class="kw">return</span> ResponseEntity.<span class="mt">ok</span>()
+            .<span class="mt">header</span>(<span class="st">"X-Total-Count"</span>, <span class="st">"250"</span>)
+            .<span class="mt">header</span>(<span class="st">"X-Rate-Limit-Remaining"</span>, <span class="st">"99"</span>)
+            .<span class="mt">body</span>(orderService.<span class="mt">findAll</span>());
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q19 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="REST">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q19</span>
+      <h3>What is global exception handling in Spring Boot? How do you implement it with @ControllerAdvice?</h3>
+      <span class="badge badge-rest">REST</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Without global exception handling, every controller method needs its own try-catch block,
+        exceptions bubble up as ugly 500 errors, and there is no consistent error response format
+        across the API. <code>@ControllerAdvice</code> (or <code>@RestControllerAdvice</code> for
+        REST) lets you define a single class that handles exceptions thrown from any controller in
+        the application. Inside it, <code>@ExceptionHandler</code> methods are matched to specific
+        exception types. This keeps your controllers clean, gives you a consistent error response
+        structure (with timestamp, status, message, path), and lets you return the correct HTTP
+        status code for each type of error. It is one of the most important patterns in production
+        Spring Boot APIs.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// Standard error response record</span>
+<span class="kw">public record</span> <span class="cl">ApiError</span>(
+    <span class="kw">int</span>    status,
+    String message,
+    String path,
+    String timestamp
+) { }
+
+<span class="cm">// Global exception handler — applies to ALL controllers</span>
+<span class="an">@RestControllerAdvice</span>
+<span class="kw">public class</span> <span class="cl">GlobalExceptionHandler</span> {
+
+    <span class="an">@ExceptionHandler</span>(<span class="cl">ResourceNotFoundException</span>.<span class="kw">class</span>)
+    <span class="an">@ResponseStatus</span>(HttpStatus.NOT_FOUND)
+    <span class="kw">public</span> <span class="cl">ApiError</span> <span class="mt">handleNotFound</span>(<span class="cl">ResourceNotFoundException</span> ex,
+                                       HttpServletRequest req) {
+        <span class="kw">return new</span> <span class="cl">ApiError</span>(<span class="nm">404</span>, ex.<span class="mt">getMessage</span>(), req.<span class="mt">getRequestURI</span>(),
+                             LocalDateTime.<span class="mt">now</span>().<span class="mt">toString</span>());
+    }
+
+    <span class="an">@ExceptionHandler</span>(MethodArgumentNotValidException.<span class="kw">class</span>)
+    <span class="an">@ResponseStatus</span>(HttpStatus.BAD_REQUEST)
+    <span class="kw">public</span> Map&lt;String, String&gt; <span class="mt">handleValidation</span>(MethodArgumentNotValidException ex) {
+        Map&lt;String, String&gt; errors = <span class="kw">new</span> HashMap&lt;&gt;();
+        ex.<span class="mt">getBindingResult</span>().<span class="mt">getFieldErrors</span>()
+          .<span class="mt">forEach</span>(e -&gt; errors.<span class="mt">put</span>(e.<span class="mt">getField</span>(), e.<span class="mt">getDefaultMessage</span>()));
+        <span class="kw">return</span> errors;  <span class="cm">// {"email": "must be valid", "name": "must not be blank"}</span>
+    }
+
+    <span class="an">@ExceptionHandler</span>(Exception.<span class="kw">class</span>)
+    <span class="an">@ResponseStatus</span>(HttpStatus.INTERNAL_SERVER_ERROR)
+    <span class="kw">public</span> <span class="cl">ApiError</span> <span class="mt">handleGeneric</span>(Exception ex, HttpServletRequest req) {
+        <span class="kw">return new</span> <span class="cl">ApiError</span>(<span class="nm">500</span>, <span class="st">"Internal error"</span>, req.<span class="mt">getRequestURI</span>(),
+                             LocalDateTime.<span class="mt">now</span>().<span class="mt">toString</span>());
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q20 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="REST">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q20</span>
+      <h3>What is bean validation in Spring Boot? How do you use @Valid and validation annotations?</h3>
+      <span class="badge badge-rest">REST</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Bean Validation (JSR-380, implemented by Hibernate Validator) lets you declare constraints
+        on your model fields using annotations and have Spring automatically validate incoming
+        request objects. Add <code>spring-boot-starter-validation</code> to enable it. Annotate
+        your request DTO with constraint annotations like <code>@NotNull</code>, <code>@NotBlank</code>,
+        <code>@Email</code>, <code>@Min</code>, <code>@Max</code>, <code>@Size</code>,
+        <code>@Pattern</code>. Then add <code>@Valid</code> on the <code>@RequestBody</code>
+        parameter in your controller. If validation fails, Spring throws
+        <code>MethodArgumentNotValidException</code>, which you can handle in
+        <code>@ControllerAdvice</code> to return detailed error messages. You can also create
+        custom validators for domain-specific rules.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// Request DTO with validation constraints</span>
+<span class="kw">public class</span> <span class="cl">CreateUserRequest</span> {
+
+    <span class="an">@NotBlank</span>(message = <span class="st">"Name is required"</span>)
+    <span class="an">@Size</span>(min = <span class="nm">2</span>, max = <span class="nm">50</span>, message = <span class="st">"Name must be 2-50 characters"</span>)
+    <span class="kw">private</span> String name;
+
+    <span class="an">@Email</span>(message = <span class="st">"Must be a valid email address"</span>)
+    <span class="an">@NotBlank</span>
+    <span class="kw">private</span> String email;
+
+    <span class="an">@Min</span>(value = <span class="nm">18</span>, message = <span class="st">"Age must be at least 18"</span>)
+    <span class="an">@Max</span>(value = <span class="nm">120</span>, message = <span class="st">"Age must be realistic"</span>)
+    <span class="kw">private int</span> age;
+
+    <span class="an">@Pattern</span>(regexp = <span class="st">"^\\+?[0-9]{10,15}$"</span>, message = <span class="st">"Invalid phone number"</span>)
+    <span class="kw">private</span> String phone;
+}
+
+<span class="cm">// Controller — @Valid triggers validation before the method body runs</span>
+<span class="an">@PostMapping</span>(<span class="st">"/api/users"</span>)
+<span class="kw">public</span> ResponseEntity&lt;User&gt; <span class="mt">create</span>(<span class="an">@RequestBody</span> <span class="an">@Valid</span> <span class="cl">CreateUserRequest</span> req) {
+    <span class="cm">// only reached if ALL constraints pass</span>
+    <span class="kw">return</span> ResponseEntity.<span class="mt">ok</span>(userService.<span class="mt">create</span>(req));
+}
+
+<span class="cm">// Validation on method parameters (service layer) — use @Validated on the class</span>
+<span class="an">@Service</span>
+<span class="an">@Validated</span>
+<span class="kw">public class</span> <span class="cl">ProductService</span> {
+    <span class="kw">public</span> Product <span class="mt">findById</span>(<span class="an">@Positive</span>(message = <span class="st">"ID must be positive"</span>) Long id) {
+        <span class="kw">return</span> repo.<span class="mt">findById</span>(id).<span class="mt">orElseThrow</span>();
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q21 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="REST">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q21</span>
+      <h3>What is RestTemplate and WebClient? Which should you use in a modern Spring Boot application?</h3>
+      <span class="badge badge-rest">REST</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Both are HTTP clients for calling external REST APIs from your Spring Boot app.
+        <code>RestTemplate</code> is the older, synchronous (blocking) client — the calling thread
+        waits until the HTTP response arrives. It is simple to use and still fully supported but
+        is in maintenance mode as of Spring 5. <code>WebClient</code> (from Spring WebFlux) is
+        the modern, non-blocking, reactive client — it can execute requests asynchronously without
+        tying up a thread. Even in a traditional (non-reactive) Spring MVC app, you can use
+        <code>WebClient</code> in blocking mode via <code>.block()</code>. For new projects,
+        Spring recommends <code>WebClient</code>. In Spring Boot 3.2+, <code>RestClient</code>
+        was introduced as a modern synchronous client with a fluent API similar to
+        <code>WebClient</code> but blocking — a good middle ground.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// ── RestTemplate (older, blocking, still widely used) ──────────────────</span>
+<span class="an">@Bean</span>
+<span class="kw">public</span> RestTemplate <span class="mt">restTemplate</span>() { <span class="kw">return new</span> RestTemplate(); }
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="cl">WeatherService</span> {
+    <span class="kw">private final</span> RestTemplate restTemplate;
+
+    <span class="kw">public</span> WeatherData <span class="mt">getWeather</span>(String city) {
+        String url = <span class="st">"https://api.weather.com/v1/city?name="</span> + city;
+        <span class="kw">return</span> restTemplate.<span class="mt">getForObject</span>(url, WeatherData.<span class="kw">class</span>); <span class="cm">// blocks</span>
+    }
+}
+
+<span class="cm">// ── WebClient (modern, non-blocking, recommended) ──────────────────────</span>
+<span class="an">@Bean</span>
+<span class="kw">public</span> WebClient <span class="mt">webClient</span>() {
+    <span class="kw">return</span> WebClient.<span class="mt">builder</span>()
+        .<span class="mt">baseUrl</span>(<span class="st">"https://api.weather.com"</span>)
+        .<span class="mt">defaultHeader</span>(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .<span class="mt">build</span>();
+}
+
+<span class="kw">public</span> Mono&lt;WeatherData&gt; <span class="mt">getWeatherAsync</span>(String city) {
+    <span class="kw">return</span> webClient.<span class="mt">get</span>()
+        .<span class="mt">uri</span>(<span class="st">"/v1/city?name={city}"</span>, city)
+        .<span class="mt">retrieve</span>()
+        .<span class="mt">bodyToMono</span>(WeatherData.<span class="kw">class</span>);  <span class="cm">// non-blocking</span>
+}
+
+<span class="cm">// Use .block() for synchronous execution in a non-reactive app:</span>
+WeatherData data = <span class="mt">getWeatherAsync</span>(<span class="st">"London"</span>).<span class="mt">block</span>();</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q22 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="REST">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q22</span>
+      <h3>What is CORS and how do you configure it in Spring Boot?</h3>
+      <span class="badge badge-rest">REST</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        CORS (Cross-Origin Resource Sharing) is a browser security mechanism that blocks JavaScript
+        running on one origin (e.g., <code>https://frontend.com</code>) from making HTTP requests
+        to a different origin (e.g., <code>https://api.myapp.com</code>). The browser sends a
+        preflight OPTIONS request to ask the server if the cross-origin call is allowed. The server
+        must respond with the correct <code>Access-Control-Allow-*</code> headers. Spring Boot
+        provides three ways to configure this: <code>@CrossOrigin</code> on individual controller
+        methods or classes (for targeted control), a global <code>WebMvcConfigurer</code> bean (for
+        app-wide policy), or through Spring Security's CORS configuration (when security is involved).
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// Method 1: @CrossOrigin on a controller</span>
+<span class="an">@RestController</span>
+<span class="an">@CrossOrigin</span>(origins = <span class="st">"https://frontend.com"</span>, maxAge = <span class="nm">3600</span>)
+<span class="kw">public class</span> <span class="cl">ApiController</span> {
+
+    <span class="cm">// More granular: only this endpoint allows any origin</span>
+    <span class="an">@CrossOrigin</span>(origins = <span class="st">"*"</span>)
+    <span class="an">@GetMapping</span>(<span class="st">"/public"</span>)
+    <span class="kw">public</span> String <span class="mt">publicEndpoint</span>() { <span class="kw">return</span> <span class="st">"open"</span>; }
+}
+
+<span class="cm">// Method 2: Global CORS config — applies to all controllers</span>
+<span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="cl">WebConfig</span> <span class="kw">implements</span> <span class="cl">WebMvcConfigurer</span> {
+
+    <span class="an">@Override</span>
+    <span class="kw">public void</span> <span class="mt">addCorsMappings</span>(CorsRegistry registry) {
+        registry.<span class="mt">addMapping</span>(<span class="st">"/api/**"</span>)
+                .<span class="mt">allowedOrigins</span>(<span class="st">"https://frontend.com"</span>, <span class="st">"https://admin.com"</span>)
+                .<span class="mt">allowedMethods</span>(<span class="st">"GET"</span>, <span class="st">"POST"</span>, <span class="st">"PUT"</span>, <span class="st">"DELETE"</span>)
+                .<span class="mt">allowedHeaders</span>(<span class="st">"*"</span>)
+                .<span class="mt">allowCredentials</span>(<span class="kw">true</span>)
+                .<span class="mt">maxAge</span>(<span class="nm">3600</span>);
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q23 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Data">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q23</span>
+      <h3>What is Spring Transaction Management? How does @Transactional work?</h3>
+      <span class="badge badge-data">Data</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        A transaction is a unit of work that either fully succeeds or fully rolls back — the classic
+        bank transfer: debit one account AND credit another must both succeed or neither should.
+        <code>@Transactional</code> is Spring's declarative way to wrap a method in a transaction.
+        Spring uses AOP to intercept the method call, begin a transaction before it runs, and
+        either commit (if the method completes normally) or roll back (if an unchecked exception
+        is thrown). By default, Spring only rolls back on unchecked exceptions
+        (<code>RuntimeException</code> and <code>Error</code>) — NOT on checked exceptions.
+        Key attributes: <code>rollbackFor</code>, <code>propagation</code> (how the transaction
+        behaves when a transactional method calls another), and <code>isolation</code> (protection
+        level against concurrent transactions).
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="cl">BankService</span> {
+
+    <span class="cm">// Default: commits on success, rolls back on RuntimeException</span>
+    <span class="an">@Transactional</span>
+    <span class="kw">public void</span> <span class="mt">transfer</span>(Long fromId, Long toId, BigDecimal amount) {
+        accountRepo.<span class="mt">debit</span>(fromId, amount);    <span class="cm">// step 1</span>
+        accountRepo.<span class="mt">credit</span>(toId, amount);   <span class="cm">// step 2</span>
+        <span class="cm">// If step 2 throws RuntimeException → step 1 is rolled back</span>
+    }
+
+    <span class="cm">// Roll back on checked exceptions too</span>
+    <span class="an">@Transactional</span>(rollbackFor = Exception.<span class="kw">class</span>)
+    <span class="kw">public void</span> <span class="mt">processOrder</span>(Order order) <span class="kw">throws</span> OrderException {
+        <span class="cm">/* ... */</span>
+    }
+
+    <span class="cm">// Read-only transaction — performance optimisation for queries</span>
+    <span class="an">@Transactional</span>(readOnly = <span class="kw">true</span>)
+    <span class="kw">public</span> List&lt;Account&gt; <span class="mt">findAll</span>() { <span class="kw">return</span> accountRepo.<span class="mt">findAll</span>(); }
+
+    <span class="cm">// Propagation — REQUIRES_NEW starts a fresh, independent transaction</span>
+    <span class="an">@Transactional</span>(propagation = Propagation.REQUIRES_NEW)
+    <span class="kw">public void</span> <span class="mt">auditLog</span>(String action) {
+        <span class="cm">// runs in its own transaction, committed independently</span>
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q24 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Data">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q24</span>
+      <h3>What is Spring Caching? How do you use @Cacheable, @CachePut, and @CacheEvict?</h3>
+      <span class="badge badge-data">Data</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        Spring's caching abstraction lets you cache method return values so expensive operations
+        (database queries, remote API calls) are not repeated unnecessarily. Enable it with
+        <code>@EnableCaching</code> on your config class. <code>@Cacheable</code> on a method
+        stores its return value the first time it runs; subsequent calls with the same arguments
+        return the cached value without executing the method body. <code>@CachePut</code> always
+        runs the method and updates the cache with the result — useful for update operations.
+        <code>@CacheEvict</code> removes an entry (or all entries) from the cache — used on delete
+        operations. Spring supports multiple cache providers: the default in-memory
+        <code>ConcurrentMapCache</code>, Caffeine, Redis, EHCache, and others.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@SpringBootApplication</span>
+<span class="an">@EnableCaching</span>              <span class="cm">// activate the caching infrastructure</span>
+<span class="kw">public class</span> <span class="cl">Application</span> { }
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="cl">ProductService</span> {
+
+    <span class="cm">// @Cacheable — cache result; skip method on cache hit</span>
+    <span class="an">@Cacheable</span>(value = <span class="st">"products"</span>, key = <span class="st">"#id"</span>)
+    <span class="kw">public</span> Product <span class="mt">findById</span>(Long id) {
+        System.out.<span class="mt">println</span>(<span class="st">"DB hit for id: "</span> + id); <span class="cm">// only printed on first call</span>
+        <span class="kw">return</span> productRepo.<span class="mt">findById</span>(id).<span class="mt">orElseThrow</span>();
+    }
+
+    <span class="cm">// @CachePut — always run + update cache entry</span>
+    <span class="an">@CachePut</span>(value = <span class="st">"products"</span>, key = <span class="st">"#product.id"</span>)
+    <span class="kw">public</span> Product <span class="mt">update</span>(Product product) {
+        <span class="kw">return</span> productRepo.<span class="mt">save</span>(product);  <span class="cm">// cache refreshed with new value</span>
+    }
+
+    <span class="cm">// @CacheEvict — remove from cache on delete</span>
+    <span class="an">@CacheEvict</span>(value = <span class="st">"products"</span>, key = <span class="st">"#id"</span>)
+    <span class="kw">public void</span> <span class="mt">delete</span>(Long id) {
+        productRepo.<span class="mt">deleteById</span>(id);
+    }
+
+    <span class="cm">// @CacheEvict with allEntries=true — clear entire cache</span>
+    <span class="an">@CacheEvict</span>(value = <span class="st">"products"</span>, allEntries = <span class="kw">true</span>)
+    <span class="kw">public void</span> <span class="mt">clearAll</span>() { }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q25 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Data">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q25</span>
+      <h3>What is Spring's @Async annotation? How does it enable asynchronous method execution?</h3>
+      <span class="badge badge-data">Data</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>@Async</code> lets you run a method on a separate thread from a thread pool without
+        manually managing threads. Add <code>@EnableAsync</code> to your config and
+        <code>@Async</code> to any method. When the method is called, Spring intercepts the call
+        (via AOP), submits the task to an executor thread pool, and immediately returns to the
+        caller — the method body runs asynchronously in the background. Methods can return
+        <code>void</code> (fire-and-forget) or <code>CompletableFuture&lt;T&gt;</code> (so the
+        caller can retrieve the result later or compose async operations). Important: <code>@Async</code>
+        only works on Spring beans called from OUTSIDE the bean (proxy limitation) — a method
+        calling <code>this.asyncMethod()</code> internally will NOT be async.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@SpringBootApplication</span>
+<span class="an">@EnableAsync</span>
+<span class="kw">public class</span> <span class="cl">Application</span> { }
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="cl">NotificationService</span> {
+
+    <span class="cm">// Fire-and-forget — caller continues immediately, email sent in background</span>
+    <span class="an">@Async</span>
+    <span class="kw">public void</span> <span class="mt">sendWelcomeEmail</span>(String email) {
+        Thread.<span class="mt">sleep</span>(<span class="nm">2000</span>);    <span class="cm">// simulate slow email send</span>
+        System.out.<span class="mt">println</span>(<span class="st">"Email sent to: "</span> + email);
+    }
+
+    <span class="cm">// Returns result later via CompletableFuture</span>
+    <span class="an">@Async</span>
+    <span class="kw">public</span> CompletableFuture&lt;String&gt; <span class="mt">processReport</span>(Long reportId) {
+        String result = heavyReportGeneration(reportId);
+        <span class="kw">return</span> CompletableFuture.<span class="mt">completedFuture</span>(result);
+    }
+}
+
+<span class="cm">// Custom thread pool instead of the default SimpleAsyncTaskExecutor</span>
+<span class="an">@Bean</span>
+<span class="kw">public</span> Executor <span class="mt">taskExecutor</span>() {
+    ThreadPoolTaskExecutor exec = <span class="kw">new</span> ThreadPoolTaskExecutor();
+    exec.<span class="mt">setCorePoolSize</span>(<span class="nm">5</span>);
+    exec.<span class="mt">setMaxPoolSize</span>(<span class="nm">20</span>);
+    exec.<span class="mt">setQueueCapacity</span>(<span class="nm">100</span>);
+    exec.<span class="mt">setThreadNamePrefix</span>(<span class="st">"async-"</span>);
+    exec.<span class="mt">initialize</span>();
+    <span class="kw">return</span> exec;
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q26 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Data">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q26</span>
+      <h3>What is Spring's @Scheduled annotation? How do you set up scheduled tasks?</h3>
+      <span class="badge badge-data">Data</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>@Scheduled</code> turns a method into a background scheduled task — no external
+        scheduler or cron daemon needed. Add <code>@EnableScheduling</code> to your configuration.
+        Tasks can be triggered in three ways: <code>fixedRate</code> runs the method every N
+        milliseconds from the previous start time — useful for polling. <code>fixedDelay</code>
+        waits N milliseconds after the previous execution COMPLETES — useful for sequential
+        tasks that must not overlap. <code>cron</code> uses a cron expression for calendar-based
+        scheduling (every day at 2am, every Monday at 9am). By default, all scheduled tasks
+        share a single thread — long tasks block others. Configure a
+        <code>TaskScheduler</code> bean with a thread pool to run them in parallel.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@SpringBootApplication</span>
+<span class="an">@EnableScheduling</span>
+<span class="kw">public class</span> <span class="cl">Application</span> { }
+
+<span class="an">@Component</span>
+<span class="kw">public class</span> <span class="cl">ScheduledTasks</span> {
+
+    <span class="cm">// Run every 5 seconds from the start of previous run</span>
+    <span class="an">@Scheduled</span>(fixedRate = <span class="nm">5000</span>)
+    <span class="kw">public void</span> <span class="mt">pollExternalApi</span>() {
+        System.out.<span class="mt">println</span>(<span class="st">"Polling at: "</span> + LocalTime.<span class="mt">now</span>());
+    }
+
+    <span class="cm">// Wait 10 seconds AFTER previous run completes before running again</span>
+    <span class="an">@Scheduled</span>(fixedDelay = <span class="nm">10000</span>)
+    <span class="kw">public void</span> <span class="mt">processQueue</span>() {
+        System.out.<span class="mt">println</span>(<span class="st">"Processing queue..."</span>);
+    }
+
+    <span class="cm">// Cron: runs at 2:30 AM every day</span>
+    <span class="an">@Scheduled</span>(cron = <span class="st">"0 30 2 * * *"</span>)
+    <span class="kw">public void</span> <span class="mt">dailyCleanup</span>() {
+        System.out.<span class="mt">println</span>(<span class="st">"Running daily cleanup..."</span>);
+    }
+
+    <span class="cm">// Cron: every Monday at 9:00 AM</span>
+    <span class="an">@Scheduled</span>(cron = <span class="st">"0 0 9 * * MON"</span>)
+    <span class="kw">public void</span> <span class="mt">weeklyReport</span>() {
+        System.out.<span class="mt">println</span>(<span class="st">"Generating weekly report..."</span>);
+    }
+
+    <span class="cm">// Cron expression from properties file (flexible, no recompile)</span>
+    <span class="an">@Scheduled</span>(cron = <span class="st">"${app.cleanup.cron:0 0 3 * * *}"</span>)
+    <span class="kw">public void</span> <span class="mt">configurableTask</span>() { }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q27 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Testing">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q27</span>
+      <h3>What is @SpringBootTest? When should you use it and what are its modes?</h3>
+      <span class="badge badge-testing">Testing</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>@SpringBootTest</code> loads the complete Spring application context for integration
+        testing — it is as close as you can get to running the real app in a test. It finds your
+        <code>@SpringBootApplication</code> class and boots the full context with all beans, auto
+        configuration, and properties. The <code>webEnvironment</code> attribute controls the
+        server: <code>MOCK</code> (default) — loads a mock servlet environment without starting a
+        real HTTP server (use with <code>MockMvc</code>). <code>RANDOM_PORT</code> — starts a real
+        embedded Tomcat on a random port (use with <code>TestRestTemplate</code> or
+        <code>WebTestClient</code>). <code>NONE</code> — no web environment at all. Use
+        <code>@SpringBootTest</code> for integration tests. For unit tests, prefer plain JUnit +
+        Mockito — loading the full context is slow and unnecessary.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// Integration test with mock web environment (no real HTTP server)</span>
+<span class="an">@SpringBootTest</span>
+<span class="an">@AutoConfigureMockMvc</span>
+<span class="kw">class</span> <span class="cl">ProductControllerIntegrationTest</span> {
+
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> MockMvc mockMvc;
+
+    <span class="an">@Test</span>
+    <span class="kw">void</span> <span class="mt">getProduct_returnsOk</span>() <span class="kw">throws</span> Exception {
+        mockMvc.<span class="mt">perform</span>(<span class="mt">get</span>(<span class="st">"/api/products/1"</span>))
+               .<span class="mt">andExpect</span>(<span class="mt">status</span>().<span class="mt">isOk</span>())
+               .<span class="mt">andExpect</span>(<span class="mt">jsonPath</span>(<span class="st">"$.name"</span>).<span class="mt">value</span>(<span class="st">"Widget"</span>));
+    }
+}
+
+<span class="cm">// Integration test with REAL embedded server on a random port</span>
+<span class="an">@SpringBootTest</span>(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+<span class="kw">class</span> <span class="cl">FullStackTest</span> {
+
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> TestRestTemplate restTemplate;
+
+    <span class="an">@LocalServerPort</span>         <span class="cm">// injects the random port chosen</span>
+    <span class="kw">private int</span> port;
+
+    <span class="an">@Test</span>
+    <span class="kw">void</span> <span class="mt">healthCheck</span>() {
+        ResponseEntity&lt;String&gt; resp =
+            restTemplate.<span class="mt">getForEntity</span>(<span class="st">"http://localhost:"</span> + port + <span class="st">"/actuator/health"</span>, String.<span class="kw">class</span>);
+        Assertions.<span class="mt">assertEquals</span>(HttpStatus.OK, resp.<span class="mt">getStatusCode</span>());
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q28 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Testing">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q28</span>
+      <h3>What is @MockBean and how is it different from Mockito's @Mock?</h3>
+      <span class="badge badge-testing">Testing</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>@Mock</code> (from Mockito) creates a mock object in plain unit tests — it has no
+        awareness of Spring and the mock is only available in the test class via
+        <code>@ExtendWith(MockitoExtension.class)</code>. <code>@MockBean</code> (from Spring Boot
+        Test) creates a Mockito mock AND registers it as a Spring bean in the application context,
+        replacing the real bean. This means all Spring beans that depend on it will receive the
+        mock. Use <code>@Mock</code> in pure unit tests where you instantiate the class under test
+        directly. Use <code>@MockBean</code> in slice tests (<code>@WebMvcTest</code>) or
+        <code>@SpringBootTest</code> where you need to replace a real Spring-managed dependency
+        with a mock.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// Pure unit test with @Mock — no Spring context needed</span>
+<span class="an">@ExtendWith</span>(MockitoExtension.<span class="kw">class</span>)
+<span class="kw">class</span> <span class="cl">OrderServiceTest</span> {
+
+    <span class="an">@Mock</span>
+    <span class="kw">private</span> <span class="cl">OrderRepository</span> orderRepository;   <span class="cm">// Mockito mock, not a Spring bean</span>
+
+    <span class="an">@InjectMocks</span>
+    <span class="kw">private</span> <span class="cl">OrderService</span> orderService;          <span class="cm">// manually wired by Mockito</span>
+
+    <span class="an">@Test</span>
+    <span class="kw">void</span> <span class="mt">placeOrder_success</span>() {
+        <span class="mt">when</span>(orderRepository.<span class="mt">save</span>(any())).<span class="mt">thenReturn</span>(<span class="kw">new</span> Order(<span class="nm">1L</span>));
+        Order result = orderService.<span class="mt">place</span>(<span class="kw">new</span> OrderRequest());
+        Assertions.<span class="mt">assertNotNull</span>(result);
+    }
+}
+
+<span class="cm">// Slice test with @MockBean — Spring loads only the web layer</span>
+<span class="an">@WebMvcTest</span>(<span class="cl">OrderController</span>.<span class="kw">class</span>)
+<span class="kw">class</span> <span class="cl">OrderControllerTest</span> {
+
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> MockMvc mockMvc;
+
+    <span class="an">@MockBean</span>
+    <span class="kw">private</span> <span class="cl">OrderService</span> orderService;   <span class="cm">// replaces real bean in Spring context</span>
+
+    <span class="an">@Test</span>
+    <span class="kw">void</span> <span class="mt">getOrder_returnsMockedData</span>() <span class="kw">throws</span> Exception {
+        <span class="mt">when</span>(orderService.<span class="mt">findById</span>(<span class="nm">1L</span>)).<span class="mt">thenReturn</span>(Optional.<span class="mt">of</span>(<span class="kw">new</span> Order(<span class="nm">1L</span>)));
+        mockMvc.<span class="mt">perform</span>(<span class="mt">get</span>(<span class="st">"/api/orders/1"</span>))
+               .<span class="mt">andExpect</span>(<span class="mt">status</span>().<span class="mt">isOk</span>());
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q29 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Testing">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q29</span>
+      <h3>What is @WebMvcTest? How is it used for testing controllers in isolation?</h3>
+      <span class="badge badge-testing">Testing</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        <code>@WebMvcTest</code> is a slice test annotation that loads only the web layer of your
+        application — controllers, filters, <code>@ControllerAdvice</code>, Jackson configuration,
+        and <code>MockMvc</code>. It does NOT load the service or repository layer, making tests
+        much faster than a full <code>@SpringBootTest</code>. You mock out all service dependencies
+        with <code>@MockBean</code>. This lets you test controller logic, request mapping, request/
+        response serialisation, validation, HTTP status codes, and exception handling in pure
+        isolation. Pass the specific controller class to the annotation to load only that controller
+        and avoid ambiguity when multiple controllers exist.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="an">@WebMvcTest</span>(<span class="cl">ProductController</span>.<span class="kw">class</span>)      <span class="cm">// only loads ProductController</span>
+<span class="kw">class</span> <span class="cl">ProductControllerTest</span> {
+
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> MockMvc mockMvc;                 <span class="cm">// auto-configured</span>
+
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> ObjectMapper objectMapper;       <span class="cm">// for JSON serialisation</span>
+
+    <span class="an">@MockBean</span>
+    <span class="kw">private</span> <span class="cl">ProductService</span> productService;  <span class="cm">// service is mocked, not real</span>
+
+    <span class="an">@Test</span>
+    <span class="kw">void</span> <span class="mt">getProduct_found_returns200</span>() <span class="kw">throws</span> Exception {
+        Product p = <span class="kw">new</span> Product(<span class="nm">1L</span>, <span class="st">"Widget"</span>, <span class="nm">9.99</span>);
+        <span class="mt">when</span>(productService.<span class="mt">findById</span>(<span class="nm">1L</span>)).<span class="mt">thenReturn</span>(Optional.<span class="mt">of</span>(p));
+
+        mockMvc.<span class="mt">perform</span>(<span class="mt">get</span>(<span class="st">"/api/products/1"</span>)
+                   .<span class="mt">contentType</span>(MediaType.APPLICATION_JSON))
+               .<span class="mt">andExpect</span>(<span class="mt">status</span>().<span class="mt">isOk</span>())
+               .<span class="mt">andExpect</span>(<span class="mt">jsonPath</span>(<span class="st">"$.name"</span>).<span class="mt">value</span>(<span class="st">"Widget"</span>))
+               .<span class="mt">andExpect</span>(<span class="mt">jsonPath</span>(<span class="st">"$.price"</span>).<span class="mt">value</span>(<span class="nm">9.99</span>));
+    }
+
+    <span class="an">@Test</span>
+    <span class="kw">void</span> <span class="mt">createProduct_invalidBody_returns400</span>() <span class="kw">throws</span> Exception {
+        Product invalid = <span class="kw">new</span> Product(<span class="kw">null</span>, <span class="st">""</span>, -<span class="nm">1</span>);  <span class="cm">// fails @NotBlank, @Positive</span>
+
+        mockMvc.<span class="mt">perform</span>(<span class="mt">post</span>(<span class="st">"/api/products"</span>)
+                   .<span class="mt">contentType</span>(MediaType.APPLICATION_JSON)
+                   .<span class="mt">content</span>(objectMapper.<span class="mt">writeValueAsString</span>(invalid)))
+               .<span class="mt">andExpect</span>(<span class="mt">status</span>().<span class="mt">isBadRequest</span>());
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Q30 ─────────────────────────────────────────────── -->
+  <div class="q-card" data-topic="Testing">
+    <div class="q-header" onclick="toggle(this)">
+      <span class="q-num">Q30</span>
+      <h3>What is the difference between unit testing and integration testing in Spring Boot? How do you decide which to write?</h3>
+      <span class="badge badge-testing">Testing</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="q-body">
+      <p>
+        A <strong>unit test</strong> tests a single class in complete isolation — all dependencies
+        are mocked (using Mockito), no Spring context is loaded, and the test runs in milliseconds.
+        It verifies the logic of one class: does the service compute the right result? Does it call
+        the repository with the right arguments? An <strong>integration test</strong> tests how
+        multiple components work together — the controller + service + repository against a real
+        (or in-memory) database. It loads a Spring context (with <code>@SpringBootTest</code> or
+        a slice annotation) and is slower. A practical strategy: write unit tests for all business
+        logic (fast feedback loop). Write integration tests for the critical paths and API contract
+        (ensure layers wire together correctly). Use the test pyramid: many unit tests, fewer
+        integration tests, very few end-to-end tests.
+      </p>
+      <div class="code-block">
+        <span class="code-label">Java</span>
+        <pre><code><span class="cm">// ── UNIT TEST: no Spring, no DB, pure Java + Mockito ──────────────────</span>
+<span class="an">@ExtendWith</span>(MockitoExtension.<span class="kw">class</span>)
+<span class="kw">class</span> <span class="cl">DiscountServiceTest</span> {
+
+    <span class="an">@Mock</span>  <span class="cl">UserRepository</span> userRepo;
+    <span class="an">@InjectMocks</span>  <span class="cl">DiscountService</span> discountService;
+
+    <span class="an">@Test</span>
+    <span class="kw">void</span> <span class="mt">premiumUser_gets20PercentDiscount</span>() {
+        <span class="mt">when</span>(userRepo.<span class="mt">findById</span>(<span class="nm">1L</span>)).<span class="mt">thenReturn</span>(Optional.<span class="mt">of</span>(<span class="kw">new</span> User(<span class="nm">1L</span>, <span class="kw">true</span>)));
+        <span class="kw">double</span> discount = discountService.<span class="mt">calculate</span>(<span class="nm">1L</span>, <span class="nm">100.0</span>);
+        Assertions.<span class="mt">assertEquals</span>(<span class="nm">20.0</span>, discount);
+    }
+}
+
+<span class="cm">// ── INTEGRATION TEST: real Spring context + in-memory H2 DB ───────────</span>
+<span class="an">@SpringBootTest</span>
+<span class="an">@Transactional</span>          <span class="cm">// rolls back DB changes after each test</span>
+<span class="kw">class</span> <span class="cl">OrderFlowIntegrationTest</span> {
+
+    <span class="an">@Autowired</span>  <span class="cl">OrderService</span>    orderService;
+    <span class="an">@Autowired</span>  <span class="cl">OrderRepository</span> orderRepo;
+
+    <span class="an">@Test</span>
+    <span class="kw">void</span> <span class="mt">placeOrder_savedToDatabase</span>() {
+        OrderRequest req = <span class="kw">new</span> OrderRequest(<span class="st">"Alice"</span>, <span class="nm">3</span>);
+        Order placed = orderService.<span class="mt">place</span>(req);
+
+        Order found = orderRepo.<span class="mt">findById</span>(placed.<span class="mt">getId</span>()).<span class="mt">orElseThrow</span>();
+        Assertions.<span class="mt">assertEquals</span>(<span class="st">"Alice"</span>, found.<span class="mt">getCustomerName</span>());
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentFilter = 'all';
+let allOpen = false;
+
+function toggle(header) {
+  const body  = header.nextElementSibling;
+  const chev  = header.querySelector('.chev');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function setFilter(topic, btn) {
+  currentFilter = topic;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('searchInput').value = '';
+  applyFilters();
+}
+
+function filterCards() { applyFilters(); }
+
+function applyFilters() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  let visibleCount = 0;
+  document.querySelectorAll('.q-card').forEach(card => {
+    const topic   = card.dataset.topic;
+    const text    = card.innerText.toLowerCase();
+    const topicOk = currentFilter === 'all' || topic === currentFilter;
+    const searchOk = !query || text.includes(query);
+    const show = topicOk && searchOk;
+    card.style.display = show ? 'block' : 'none';
+    if (show) visibleCount++;
+  });
+  document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+}
+
+function toggleAll() {
+  allOpen = !allOpen;
+  document.querySelectorAll('.q-card').forEach(card => {
+    if (card.style.display === 'none') return;
+    const body = card.querySelector('.q-body');
+    const chev = card.querySelector('.chev');
+    body.classList.toggle('open', allOpen);
+    chev.classList.toggle('open', allOpen);
+  });
+  document.querySelector('.expand-all-btn').textContent = allOpen ? 'Collapse All ▴' : 'Expand All ▾';
+}
+</script>
+</body>
+</html>

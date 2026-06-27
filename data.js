@@ -76,10 +76,16 @@ const TOPICS = {
         icon: "💭",
         subtopics: [
           { id: "java-interview-1",  title: "Question Set 1" },
-          { id: "java-interview-2",      title: "Question Set 2" },
+          { id: "java-interview-2",  title: "Question Set 2" },
           { id: "java-interview-3",  title: "Question Set 3" },
           { id: "java-interview-4",  title: "Question Set 4" },
           { id: "java-interview-5",  title: "Question Set 5" },
+          // TODO - To be moved to Springboot section
+          { id: "sb-interview-1",  title: "Spring Boot Set 1" },
+          { id: "sb-interview-2",  title: "Spring Boot Set 2" },
+          { id: "sb-interview-3",  title: "Spring Boot Set 3" },
+          { id: "sb-interview-4",  title: "Spring Boot Set 4" },
+          { id: "sb-interview-5",  title: "Spring Boot Set 5" },
         ]
       },
       {
@@ -190,6 +196,17 @@ const TOPICS = {
           { id: "sb-entity",     title: "Entities & @Table" },
           { id: "sb-repository", title: "JpaRepository" },
           { id: "sb-queries",    title: "Custom Queries" },
+        ]
+      },
+      {
+        id: "sb-data",
+        title: "Spring Boot Interviews",
+        icon: "🗄️",
+        subtopics: [
+          { id: "sb-interview-set-1",     title: "Interview Question. Set-1" },
+          { id: "sb-interview-set-2", title: "Interview Question. Set-2" },
+          { id: "sb-interview-set-3",    title: "Interview Question. Set-3" },
+          { id: "sb-interview-set-4",    title: "Interview Question. Set-3" },
         ]
       },
     ]

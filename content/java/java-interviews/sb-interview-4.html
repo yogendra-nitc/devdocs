@@ -1,0 +1,785 @@
+
+<p class="intro">Spring Boot questions on Annotation, DI, Autowiring and class level annotations</p>
+<h3>Q1. What is the purpose of @SpringBootApplication annotation in Spring Boot?</h3>
+
+`@SpringBootApplication` is a convenience annotation that combines three commonly used annotations:
+- `@Configuration` - Marks the class as a source of bean definitions.
+- `@EnableAutoConfiguration` - Automatically configures Spring Boot based on dependencies present in the classpath.
+- `@ComponentScan` - Scans the current package and its sub-packages for Spring components.
+
+It is typically placed on the main application class and serves as the entry point of a Spring Boot application.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class EmployeeApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(EmployeeApplication.class, args);
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q2. What is Dependency Injection (DI) in Spring Boot?</h3>
+
+Dependency Injection is an Inversion of Control (IoC) technique where the Spring container creates and injects the required objects (beans) instead of the application creating them manually. DI promotes loose coupling, easier testing, and better maintainability.
+
+Spring supports:
+- Constructor Injection (recommended)
+- Setter Injection
+- Field Injection
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class EmailService {
+
+    public void sendEmail() {
+        System.out.println("Sending email");
+    }
+}
+
+@Service
+public class NotificationService {
+
+    private final EmailService emailService;
+
+    public NotificationService(EmailService emailService) {
+        this.emailService = emailService;
+    }
+
+    public void notifyUser() {
+        emailService.sendEmail();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q3. What is @Autowired annotation?</h3>
+
+`@Autowired` tells the Spring container to automatically inject a matching bean into a class. Spring searches for a compatible bean by type and injects it.
+
+It can be used on:
+- Constructor
+- Setter
+- Field
+
+Constructor injection is the recommended approach because it creates immutable dependencies and simplifies testing.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class PaymentService {
+
+    @Autowired
+    private EmailService emailService;
+
+    public void processPayment() {
+        emailService.sendEmail();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q4. Why is Constructor Injection preferred over Field Injection?</h3>
+
+Constructor Injection is preferred because:
+- Makes dependencies mandatory.
+- Supports immutable fields using `final`.
+- Easier to write unit tests.
+- Avoids reflection.
+- Makes the class easier to understand.
+
+Field Injection is simple but not recommended for production code.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class OrderService {
+
+    private final PaymentService paymentService;
+
+    public OrderService(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q5. What is @Component annotation?</h3>
+
+`@Component` is a generic stereotype annotation that tells Spring to detect and register the class as a bean during component scanning.
+
+Classes annotated with `@Component` become managed by the Spring container.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+import org.springframework.stereotype.Component;
+
+@Component
+public class MessageUtil {
+
+    public String getMessage() {
+        return "Hello Spring";
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q6. What is the difference between @Component, @Service, @Repository, and @Controller?</h3>
+
+All four annotations register a class as a Spring bean, but each represents a different layer of the application.
+
+- `@Component` – Generic Spring bean.
+- `@Service` – Business logic layer.
+- `@Repository` – Data access layer and enables exception translation.
+- `@Controller` – MVC controller for handling web requests.
+
+Using the appropriate stereotype improves code readability and organization.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Component
+public class UtilityClass {}
+
+@Service
+public class EmployeeService {}
+
+@Repository
+public class EmployeeRepository {}
+
+@Controller
+public class EmployeeController {}
+  </code></pre>
+</div>
+
+<h3>Q7. What is @RestController annotation?</h3>
+
+`@RestController` is a convenience annotation that combines:
+- `@Controller`
+- `@ResponseBody`
+
+Every method automatically returns JSON or XML instead of a view.
+
+It is commonly used for REST APIs.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class WelcomeController {
+
+    @GetMapping("/welcome")
+    public String welcome() {
+        return "Welcome to Spring Boot";
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q8. What is @Configuration annotation?</h3>
+
+`@Configuration` indicates that a class contains bean definitions. Methods annotated with `@Bean` inside the class are executed by Spring to create beans that are managed by the container.
+
+It is commonly used when configuring third-party libraries.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public EmailService emailService() {
+        return new EmailService();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q9. What is @Bean annotation?</h3>
+
+`@Bean` is used inside a `@Configuration` class to explicitly create and register an object as a Spring bean.
+
+It is useful when:
+- Configuring third-party classes.
+- Creating customized bean instances.
+- Bean creation requires additional logic.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public EmployeeService employeeService() {
+        return new EmployeeService();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q10. What is @ComponentScan annotation?</h3>
+
+`@ComponentScan` instructs Spring to scan specified packages for classes annotated with stereotype annotations such as `@Component`, `@Service`, `@Repository`, and `@Controller`.
+
+If no package is specified, Spring scans the package of the main application class and all its sub-packages.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Configuration
+@ComponentScan(basePackages = {
+    "com.example.service",
+    "com.example.repository"
+})
+public class AppConfig {
+
+}
+  </code></pre>
+</div>
+
+<h3>Q11. What is @Qualifier annotation and why is it used?</h3>
+
+`@Qualifier` is used to resolve ambiguity when multiple beans of the same type exist in the Spring container. By default, Spring autowires beans by type. If more than one matching bean is found, a `NoUniqueBeanDefinitionException` is thrown. `@Qualifier` specifies which bean should be injected.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+public interface NotificationService {
+    void send();
+}
+
+@Service("emailService")
+public class EmailService implements NotificationService {
+
+    @Override
+    public void send() {
+        System.out.println("Email sent");
+    }
+}
+
+@Service("smsService")
+public class SmsService implements NotificationService {
+
+    @Override
+    public void send() {
+        System.out.println("SMS sent");
+    }
+}
+
+@Service
+public class UserService {
+
+    private final NotificationService notificationService;
+
+    public UserService(@Qualifier("emailService") NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q12. What is @Primary annotation?</h3>
+
+`@Primary` marks a bean as the default choice when multiple beans of the same type are available. If no `@Qualifier` is specified, Spring injects the bean annotated with `@Primary`.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+public interface PaymentService {
+    void pay();
+}
+
+@Service
+@Primary
+public class CreditCardPaymentService implements PaymentService {
+
+    @Override
+    public void pay() {
+        System.out.println("Credit Card Payment");
+    }
+}
+
+@Service
+public class UpiPaymentService implements PaymentService {
+
+    @Override
+    public void pay() {
+        System.out.println("UPI Payment");
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q13. What is @Value annotation?</h3>
+
+`@Value` is used to inject values from application properties, environment variables, or literal values into Spring-managed beans. It is commonly used for application configuration.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// application.properties
+app.name=Employee Management System
+
+@Service
+public class AppService {
+
+    @Value("${app.name}")
+    private String appName;
+
+    public void printName() {
+        System.out.println(appName);
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q14. What is @Lazy annotation?</h3>
+
+By default, singleton beans are created during application startup. `@Lazy` delays bean creation until it is requested for the first time. This helps improve startup performance when certain beans are expensive to initialize.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+@Lazy
+public class ReportService {
+
+    public ReportService() {
+        System.out.println("ReportService created");
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q15. What is @Scope annotation?</h3>
+
+`@Scope` specifies the lifecycle and visibility of a Spring bean.
+
+Common scopes include:
+- singleton (default)
+- prototype
+- request
+- session
+- application
+
+Singleton creates one shared instance, while prototype creates a new instance every time the bean is requested.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Component
+@Scope("prototype")
+public class Employee {
+
+}
+  </code></pre>
+</div>
+
+<h3>Q16. What is @Profile annotation?</h3>
+
+`@Profile` allows beans to be loaded only for specific environments such as development, testing, or production. It helps manage environment-specific configurations without changing the code.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+@Profile("dev")
+public class MockPaymentService {
+
+    public void pay() {
+        System.out.println("Development Payment");
+    }
+}
+
+@Service
+@Profile("prod")
+public class RealPaymentService {
+
+    public void pay() {
+        System.out.println("Production Payment");
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q17. What is @ConfigurationProperties annotation?</h3>
+
+`@ConfigurationProperties` binds a group of related properties from the configuration file into a Java object. It is preferred over multiple `@Value` annotations when several related properties need to be mapped.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// application.properties
+employee.name=John
+employee.department=IT
+
+@Component
+@ConfigurationProperties(prefix = "employee")
+public class EmployeeProperties {
+
+    private String name;
+    private String department;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q18. What are @PostConstruct and @PreDestroy annotations?</h3>
+
+`@PostConstruct` executes a method immediately after dependency injection is complete. `@PreDestroy` executes just before the bean is removed from the Spring container. These annotations are commonly used for initialization and cleanup tasks.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class CacheService {
+
+    @PostConstruct
+    public void initialize() {
+        System.out.println("Cache initialized");
+    }
+
+    @PreDestroy
+    public void cleanup() {
+        System.out.println("Cache cleared");
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q19. What happens if multiple beans of the same type are present and neither @Primary nor @Qualifier is used?</h3>
+
+Spring attempts to autowire beans by type. If multiple matching beans are found and neither `@Primary` nor `@Qualifier` is specified, the application fails to start with a `NoUniqueBeanDefinitionException`.
+
+To resolve the issue:
+- Use `@Qualifier`.
+- Mark one bean as `@Primary`.
+- Inject a collection such as `List&lt;BeanType&gt;`.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class NotificationService {
+
+    private final PaymentService paymentService;
+
+    public NotificationService(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+
+    // Throws NoUniqueBeanDefinitionException
+    // if multiple PaymentService beans exist.
+}
+  </code></pre>
+</div>
+
+<h3>Q20. What is a Circular Dependency in Spring Boot and how can it be resolved?</h3>
+
+A circular dependency occurs when two or more beans depend on each other directly or indirectly. Constructor injection cannot resolve circular dependencies and causes the application context to fail during startup.
+
+Common ways to resolve it include:
+- Redesign the application to remove the dependency.
+- Introduce an intermediate service.
+- Use `@Lazy` on one of the dependencies if redesign is not immediately possible.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class ServiceA {
+
+    private final ServiceB serviceB;
+
+    public ServiceA(@Lazy ServiceB serviceB) {
+        this.serviceB = serviceB;
+    }
+}
+
+@Service
+public class ServiceB {
+
+    private final ServiceA serviceA;
+
+    public ServiceB(ServiceA serviceA) {
+        this.serviceA = serviceA;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q21. What is @Conditional annotation in Spring Boot?</h3>
+
+`@Conditional` is used to register a bean only when a specified condition is satisfied. It enables conditional bean creation based on custom logic, making the application configuration more flexible.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+public class WindowsCondition implements Condition {
+
+    @Override
+    public boolean matches(ConditionContext context,
+                           AnnotatedTypeMetadata metadata) {
+        return System.getProperty("os.name").contains("Windows");
+    }
+}
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    @Conditional(WindowsCondition.class)
+    public FileService fileService() {
+        return new FileService();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q22. What is @ConditionalOnProperty annotation?</h3>
+
+`@ConditionalOnProperty` is a Spring Boot annotation that creates a bean only when a specific property exists and matches a given value. It is commonly used to enable or disable features through configuration.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// application.properties
+feature.email.enabled=true
+
+@Configuration
+public class FeatureConfig {
+
+    @Bean
+    @ConditionalOnProperty(
+        name = "feature.email.enabled",
+        havingValue = "true"
+    )
+    public EmailService emailService() {
+        return new EmailService();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q23. What is @EnableConfigurationProperties annotation?</h3>
+
+`@EnableConfigurationProperties` enables support for classes annotated with `@ConfigurationProperties`. It is commonly used to register configuration classes as Spring beans, especially when they are not annotated with `@Component`.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@ConfigurationProperties(prefix = "database")
+public class DatabaseProperties {
+
+    private String url;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+}
+
+@Configuration
+@EnableConfigurationProperties(DatabaseProperties.class)
+public class AppConfig {
+
+}
+  </code></pre>
+</div>
+
+<h3>Q24. What is @Import annotation?</h3>
+
+`@Import` imports one or more configuration classes into the current configuration class. It helps organize large applications by separating configurations into multiple files.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Configuration
+public class DatabaseConfig {
+
+    @Bean
+    public DatabaseService databaseService() {
+        return new DatabaseService();
+    }
+}
+
+@Configuration
+@Import(DatabaseConfig.class)
+public class AppConfig {
+
+}
+  </code></pre>
+</div>
+
+<h3>Q25. What is @Order annotation?</h3>
+
+`@Order` defines the priority of Spring-managed components when multiple beans are processed together, such as filters, interceptors, or collections of beans. Lower values indicate higher priority.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Component
+@Order(1)
+public class EmailNotifier implements Notifier {
+
+}
+
+@Component
+@Order(2)
+public class SmsNotifier implements Notifier {
+
+}
+  </code></pre>
+</div>
+
+<h3>Q26. What is @DependsOn annotation?</h3>
+
+`@DependsOn` specifies that one bean depends on another bean being initialized first. It controls the initialization order when startup sequence is important.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Component
+public class DatabaseInitializer {
+
+}
+
+@Component
+@DependsOn("databaseInitializer")
+public class EmployeeService {
+
+}
+  </code></pre>
+</div>
+
+<h3>Q27. What is @Autowired(required = false)? When should it be used?</h3>
+
+By default, `@Autowired` requires a matching bean. If no bean is found, Spring throws an exception. Setting `required = false` makes the dependency optional. If the bean is unavailable, Spring injects `null` instead of failing.
+
+This approach should be used sparingly. Using `Optional&lt;T&gt;` or `ObjectProvider&lt;T&gt;` is generally preferred.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class ReportService {
+
+    @Autowired(required = false)
+    private EmailService emailService;
+
+    public void generateReport() {
+        if (emailService != null) {
+            emailService.sendEmail();
+        }
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q28. What is ObjectProvider in Spring Boot?</h3>
+
+`ObjectProvider` provides lazy and optional access to beans. Unlike `@Autowired`, it does not fail if the bean is unavailable. It is useful when bean creation should be deferred or when the dependency is optional.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class NotificationService {
+
+    private final ObjectProvider&lt;EmailService&gt; provider;
+
+    public NotificationService(ObjectProvider&lt;EmailService&gt; provider) {
+        this.provider = provider;
+    }
+
+    public void notifyUser() {
+        EmailService service = provider.getIfAvailable();
+
+        if (service != null) {
+            service.sendEmail();
+        }
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q29. Is @Autowired required on a constructor in Spring Boot?</h3>
+
+Since Spring Framework 4.3, if a class has only one constructor, Spring automatically performs constructor injection without requiring the `@Autowired` annotation. This results in cleaner and more readable code.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class EmployeeService {
+
+    private final EmployeeRepository repository;
+
+    public EmployeeService(EmployeeRepository repository) {
+        this.repository = repository;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q30. What is Component Scanning and how does Spring Boot perform it?</h3>
+
+Component Scanning is the process by which Spring automatically discovers classes annotated with stereotype annotations such as `@Component`, `@Service`, `@Repository`, and `@Controller`, and registers them as beans.
+
+By default, Spring Boot scans:
+- The package containing the `@SpringBootApplication` class.
+- All of its sub-packages.
+
+Classes outside this hierarchy must be included explicitly using `@ComponentScan`.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@SpringBootApplication
+@ComponentScan(basePackages = {
+    "com.company.service",
+    "com.company.repository",
+    "com.company.controller"
+})
+public class EmployeeApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(EmployeeApplication.class, args);
+    }
+}
+  </code></pre>
+</div>

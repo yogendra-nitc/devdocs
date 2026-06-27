@@ -1,0 +1,465 @@
+
+<p class="intro">Spring Boot questions on REST APIs development</p>
+
+<h3>Q1. What is a REST API and what are its key principles?</h3>
+
+REST (Representational State Transfer) is an architectural style for designing web services that communicate over HTTP. REST APIs expose resources using URIs and standard HTTP methods.
+
+Key principles of REST include:
+- Stateless communication
+- Client-server architecture
+- Resource-based URLs
+- Uniform interface
+- Cacheable responses
+- Layered system
+
+Spring Boot simplifies REST API development using annotations such as `@RestController`, `@RequestMapping`, and `@GetMapping`.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+@RequestMapping("/employees")
+public class EmployeeController {
+
+    @GetMapping
+    public String getEmployees() {
+        return "Employee List";
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q2. What is @RestController annotation?</h3>
+
+`@RestController` is a specialized Spring annotation used to create RESTful web services. It combines `@Controller` and `@ResponseBody`, meaning the return value of every handler method is written directly to the HTTP response body instead of resolving a view.
+
+It is the preferred annotation for REST APIs.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+public class WelcomeController {
+
+    @GetMapping("/welcome")
+    public String welcome() {
+        return "Welcome to Spring Boot REST API";
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q3. What is @RequestMapping annotation?</h3>
+
+`@RequestMapping` maps HTTP requests to controller classes or methods. It can define the URL path, HTTP method, headers, content type, and accepted media type.
+
+It can be applied at both the class level and method level.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+@RequestMapping("/employees")
+public class EmployeeController {
+
+    @RequestMapping("/all")
+    public String getEmployees() {
+        return "All Employees";
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q4. What is the difference between @Controller and @RestController?</h3>
+
+`@Controller` is primarily used in Spring MVC applications to return views such as JSP or Thymeleaf templates.
+
+`@RestController` is used for REST APIs and automatically serializes Java objects into JSON or XML for the HTTP response.
+
+Use `@Controller` for web pages and `@RestController` for RESTful services.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Controller
+public class ViewController {
+
+    @GetMapping("/home")
+    public String home() {
+        return "home";
+    }
+}
+
+@RestController
+public class ApiController {
+
+    @GetMapping("/api/message")
+    public String message() {
+        return "Hello REST";
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q5. What are the commonly used HTTP methods in REST APIs?</h3>
+
+REST APIs primarily use the following HTTP methods:
+
+- GET – Retrieve resources
+- POST – Create a new resource
+- PUT – Update an existing resource completely
+- PATCH – Partially update a resource
+- DELETE – Remove a resource
+
+Spring Boot provides dedicated annotations for each HTTP method.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@GetMapping
+public List&lt;Employee&gt; getEmployees() { }
+
+@PostMapping
+public Employee createEmployee() { }
+
+@PutMapping("/{id}")
+public Employee updateEmployee() { }
+
+@PatchMapping("/{id}")
+public Employee updateSalary() { }
+
+@DeleteMapping("/{id}")
+public void deleteEmployee() { }
+  </code></pre>
+</div>
+
+<h3>Q6. What is @GetMapping annotation?</h3>
+
+`@GetMapping` is a shortcut for `@RequestMapping(method = RequestMethod.GET)`. It maps HTTP GET requests to a controller method and is typically used to retrieve one or more resources.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+@RequestMapping("/employees")
+public class EmployeeController {
+
+    @GetMapping("/{id}")
+    public String getEmployee() {
+        return "Employee Details";
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q7. What is @PostMapping annotation?</h3>
+
+`@PostMapping` maps HTTP POST requests to a controller method. It is commonly used to create new resources in the application.
+
+The request body is usually received using the `@RequestBody` annotation.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@PostMapping
+public Employee createEmployee(
+        @RequestBody Employee employee) {
+
+    return employee;
+}
+  </code></pre>
+</div>
+
+<h3>Q8. What are @PutMapping and @PatchMapping? What is the difference?</h3>
+
+`@PutMapping` is used for complete updates of a resource. The client typically sends the entire resource representation.
+
+`@PatchMapping` is used for partial updates where only specific fields are modified.
+
+PUT replaces the resource, whereas PATCH modifies only the supplied fields.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@PutMapping("/{id}")
+public Employee updateEmployee(
+        @PathVariable Long id,
+        @RequestBody Employee employee) {
+
+    return employee;
+}
+
+@PatchMapping("/{id}")
+public Employee updateSalary(
+        @PathVariable Long id,
+        @RequestBody Employee employee) {
+
+    return employee;
+}
+  </code></pre>
+</div>
+
+<h3>Q9. What is @DeleteMapping annotation?</h3>
+
+`@DeleteMapping` maps HTTP DELETE requests to a controller method. It is used to remove a resource identified by a unique identifier.
+
+Typically, a successful deletion returns HTTP status 204 (No Content) or 200 (OK).
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@DeleteMapping("/{id}")
+public void deleteEmployee(
+        @PathVariable Long id) {
+
+    System.out.println("Deleted Employee " + id);
+}
+  </code></pre>
+</div>
+
+<h3>Q10. What is @RequestBody annotation?</h3>
+
+`@RequestBody` binds the JSON request payload to a Java object. Spring Boot automatically converts the incoming JSON into a Java object using the Jackson library.
+
+It is commonly used with POST, PUT, and PATCH requests.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@PostMapping("/employees")
+public Employee saveEmployee(
+        @RequestBody Employee employee) {
+
+    return employee;
+}
+
+class Employee {
+
+    private Long id;
+    private String name;
+
+    // Getters and Setters
+}
+  </code></pre>
+</div>
+
+<h3>Q11. What is @PathVariable annotation?</h3>
+
+`@PathVariable` is used to extract values from the URI path and bind them to method parameters. It is commonly used to identify a specific resource in REST APIs.
+
+For example, in `/employees/101`, the value `101` can be mapped to a method parameter using `@PathVariable`.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+@RequestMapping("/employees")
+public class EmployeeController {
+
+    @GetMapping("/{id}")
+    public String getEmployeeById(
+            @PathVariable Long id) {
+
+        return "Employee Id : " + id;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q12. What is @RequestParam annotation?</h3>
+
+`@RequestParam` binds query parameters from the URL to method parameters. It is commonly used for filtering, searching, sorting, and pagination.
+
+For example:
+`GET /employees?department=IT`
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@GetMapping("/search")
+public String searchEmployee(
+        @RequestParam String department) {
+
+    return "Department : " + department;
+}
+  </code></pre>
+</div>
+
+<h3>Q13. What is @RequestHeader annotation?</h3>
+
+`@RequestHeader` is used to read values from HTTP request headers. It is commonly used to retrieve headers such as `Authorization`, `Content-Type`, `Accept`, or custom headers.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@GetMapping("/profile")
+public String getProfile(
+        @RequestHeader("Authorization")
+        String token) {
+
+    return token;
+}
+  </code></pre>
+</div>
+
+<h3>Q14. What is ResponseEntity and why is it used?</h3>
+
+`ResponseEntity` represents the complete HTTP response, including the response body, HTTP status code, and headers. It provides greater control over the response compared to returning an object directly.
+
+It is widely used in production REST APIs.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@GetMapping("/{id}")
+public ResponseEntity&lt;String&gt; getEmployee(
+        @PathVariable Long id) {
+
+    return ResponseEntity
+            .ok("Employee Found");
+}
+  </code></pre>
+</div>
+
+<h3>Q15. What is @ResponseStatus annotation?</h3>
+
+`@ResponseStatus` specifies the HTTP status code returned by a controller method or exception class. It improves readability by explicitly defining the expected response status.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@PostMapping
+@ResponseStatus(HttpStatus.CREATED)
+public Employee createEmployee(
+        @RequestBody Employee employee) {
+
+    return employee;
+}
+  </code></pre>
+</div>
+
+<h3>Q16. What is @ExceptionHandler annotation?</h3>
+
+`@ExceptionHandler` is used to handle exceptions thrown by controller methods. It allows applications to return meaningful error messages and HTTP status codes instead of exposing stack traces.
+
+It can be defined within a controller or in a global exception handler.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+public class EmployeeController {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity&lt;String&gt; handleException(
+            RuntimeException ex) {
+
+        return ResponseEntity
+                .badRequest()
+                .body(ex.getMessage());
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q17. What is @ControllerAdvice annotation?</h3>
+
+`@ControllerAdvice` provides centralized exception handling across all controllers. Instead of writing `@ExceptionHandler` methods in every controller, a global handler can manage exceptions for the entire application.
+
+It promotes code reuse and consistent error responses.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;String&gt; handleException(
+            Exception ex) {
+
+        return ResponseEntity
+                .internalServerError()
+                .body(ex.getMessage());
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q18. What is REST API Versioning and why is it important?</h3>
+
+REST API Versioning allows multiple versions of an API to coexist without breaking existing clients. It enables backward compatibility when introducing new features or modifying API behavior.
+
+Common approaches include:
+- URI Versioning (`/v1/employees`)
+- Query Parameter Versioning
+- Custom Header Versioning
+- Media Type Versioning
+
+URI versioning is the most commonly used approach.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+@RequestMapping("/api/v1/employees")
+public class EmployeeController {
+
+    @GetMapping
+    public String getEmployees() {
+
+        return "Version 1";
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q19. What is Content Negotiation in Spring Boot?</h3>
+
+Content Negotiation is the process of selecting the response format based on the client's request. Spring Boot supports multiple response formats such as JSON and XML.
+
+The client specifies the desired format using the `Accept` header.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@GetMapping(
+    value = "/employees",
+    produces = MediaType.APPLICATION_JSON_VALUE
+)
+public List&lt;Employee&gt; getEmployees() {
+
+    return List.of();
+}
+  </code></pre>
+</div>
+
+<h3>Q20. What is @Valid annotation and how is it used for request validation?</h3>
+
+`@Valid` triggers validation of incoming request data using Jakarta Bean Validation annotations such as `@NotNull`, `@NotBlank`, `@Email`, `@Min`, and `@Max`.
+
+If validation fails, Spring Boot returns a validation error response before executing the controller method.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+public class Employee {
+
+    @NotBlank
+    private String name;
+
+    @Email
+    private String email;
+
+    // Getters and Setters
+}
+
+@PostMapping
+public Employee createEmployee(
+        @Valid @RequestBody Employee employee) {
+
+    return employee;
+}
+  </code></pre>
+</div>

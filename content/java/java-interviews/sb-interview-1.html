@@ -1,0 +1,918 @@
+<h3>Q1. What is Spring Boot and how is it different from the traditional Spring Framework?</h3>
+
+Spring Boot is an opinionated framework built on top of the Spring Framework that reduces boilerplate configuration and simplifies application development. Traditional Spring applications require manual configuration of beans, dependency management, web servers, and application contexts. Spring Boot automates these tasks using Auto Configuration, Starter Dependencies, and Embedded Servers.
+
+Key advantages include:
+- Auto Configuration
+- Starter Dependencies
+- Embedded Tomcat/Jetty/Undertow
+- Production-ready features
+- Minimal XML or Java configuration
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@SpringBootApplication
+public class MyApp {
+
+    public static void main(String[] args) {
+        SpringApplication.run(MyApp.class, args);
+    }
+}
+  </code></pre>
+</div>
+
+ <h3>Q2. What does @SpringBootApplication do? What three annotations does it combine?</h3>
+
+`@SpringBootApplication` is a meta-annotation that combines three important annotations: `@SpringBootConfiguration`, `@EnableAutoConfiguration`, and `@ComponentScan`. Together, they bootstrap a Spring Boot application by enabling bean definitions, automatic configuration based on dependencies, and component scanning in the base package.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@SpringBootApplication
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q3. What is Spring Boot Auto-Configuration and how does it work?</h3>
+
+Auto-configuration automatically configures Spring beans based on the classpath, existing beans, and application properties. It uses conditional annotations like `@ConditionalOnClass`, `@ConditionalOnMissingBean`, and `@ConditionalOnProperty` to decide which configurations to apply.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Configuration
+@ConditionalOnClass(DataSource.class)
+@ConditionalOnMissingBean(DataSource.class)
+public class DataSourceAutoConfiguration {
+
+    @Bean
+    public DataSource dataSource() {
+        return new H2DataSource();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q4. What is Dependency Injection in Spring and what are its types?</h3>
+
+Dependency Injection is a design principle where dependencies are provided by the Spring container instead of being created manually. It improves loose coupling and testability.
+
+Types:
+- Constructor Injection (recommended)
+- Setter Injection
+- Field Injection (not recommended)
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class OrderService {
+
+    private final PaymentService paymentService;
+
+    public OrderService(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q5. What is a Spring Bean and what are different bean scopes?</h3>
+
+A Spring Bean is an object managed by the Spring IoC container. Bean scopes define the lifecycle and visibility of beans.
+
+Common scopes:
+- singleton (default)
+- prototype
+- request
+- session
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class EmailService { }
+
+// Prototype scope
+@Component
+@Scope("prototype")
+public class ReportGenerator { }
+  </code></pre>
+</div>
+
+<h3>Q6. What is ApplicationContext in Spring?</h3>
+
+ApplicationContext is the central interface of Spring IoC container. It is responsible for bean creation, dependency injection, lifecycle management, and event publishing. It is an advanced version of BeanFactory.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@SpringBootApplication
+public class Application {
+
+    public static void main(String[] args) {
+        ApplicationContext context =
+                SpringApplication.run(Application.class, args);
+
+        OrderService service = context.getBean(OrderService.class);
+        System.out.println(service);
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q7. What is the difference between @Component, @Service, @Repository, and @Controller?</h3>
+
+All are stereotype annotations used for component scanning. They differ in meaning:
+
+- @Component → Generic bean
+- @Service → Business logic layer
+- @Repository → DAO layer with exception translation
+- @Controller → Web MVC controller
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Component
+class UtilityClass { }
+
+@Service
+class OrderService { }
+
+@Repository
+class OrderRepository { }
+
+@Controller
+class HomeController { }
+  </code></pre>
+</div>
+
+<h3>Q8. What is Spring AOP and why is it used?</h3>
+
+Spring AOP (Aspect Oriented Programming) is used to handle cross-cutting concerns like logging, security, and transactions without modifying business logic. It uses aspects, pointcuts, and advices.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @Before("execution(* com.example.service.*.*(..))")
+    public void logBefore() {
+        System.out.println("Method called");
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q9. What is the difference between application.properties and application.yml?</h3>
+
+Both are used for external configuration.
+
+- application.properties → key-value format
+- application.yml → hierarchical, structured format
+
+YAML is more readable for complex configurations, while properties are simpler and widely used.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// application.properties
+server.port=8080
+spring.datasource.url=jdbc:mysql://localhost:3306/db
+
+// application.yml
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/db
+  </code></pre>
+</div>
+
+<h3>Q10. What is @ConfigurationProperties and why is it better than @Value?</h3>
+
+`@ConfigurationProperties` binds multiple related configuration properties into a single POJO. It is better than `@Value` because it supports type safety, validation, and structured configuration.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@ConfigurationProperties(prefix = "app")
+public class AppProperties {
+
+    private String name;
+    private int timeout;
+
+    // getters and setters
+}
+
+@Service
+public class AppService {
+
+    private final AppProperties properties;
+
+    public AppService(AppProperties properties) {
+        this.properties = properties;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q11. What are Spring Profiles? How do you activate them and use them for environment-specific configuration?</h3>
+
+Spring Profiles allow you to define environment-specific configurations such as dev, test, staging, and production. You can create separate configuration files like `application-dev.yml` and `application-prod.yml`, and Spring Boot will load the active profile at runtime. You can also use `@Profile` annotation to conditionally load beans based on environment.
+
+Profiles can be activated using:
+- application.properties/yml
+- JVM argument (-Dspring.profiles.active=prod)
+- Environment variable (SPRING_PROFILES_ACTIVE)
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Profile("dev")
+@Service
+public class DevEmailService implements EmailService {
+
+    public void send(String to, String msg) {
+        System.out.println("Dev email sent to " + to);
+    }
+}
+
+@Profile("prod")
+@Service
+public class ProdEmailService implements EmailService {
+
+    public void send(String to, String msg) {
+        // real email sending logic
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q12. What is Spring Boot Actuator and what does it provide?</h3>
+
+Spring Boot Actuator provides production-ready monitoring and management endpoints. It exposes operational insights such as health status, metrics, environment properties, beans, and logs without writing extra code.
+
+Common endpoints:
+- /actuator/health
+- /actuator/metrics
+- /actuator/info
+- /actuator/env
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Component
+public class CustomHealthIndicator implements HealthIndicator {
+
+    @Override
+    public Health health() {
+        boolean status = checkService();
+        return status ? Health.up().build() : Health.down().build();
+    }
+
+    private boolean checkService() {
+        return true;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q13. What is Spring Boot DevTools and what are its benefits?</h3>
+
+Spring Boot DevTools improves development speed by enabling automatic restart, live reload, and disabling caching during development. It uses separate classloaders to restart only application code, making restarts faster.
+
+It is automatically disabled in production.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// pom.xml dependency
+// spring-boot-devtools (optional = true)
+
+// application.properties
+// spring.thymeleaf.cache=false
+// spring.web.resources.cache.period=0
+// logging.level.web=DEBUG
+  </code></pre>
+</div>
+
+<h3>Q14. What are @Conditional annotations in Spring Boot?</h3>
+
+Conditional annotations control bean creation based on runtime conditions like classpath presence, missing beans, or configuration properties. They are heavily used in auto-configuration.
+
+Common ones:
+- @ConditionalOnClass
+- @ConditionalOnMissingBean
+- @ConditionalOnProperty
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Bean
+@ConditionalOnClass(name = "com.github.benmanes.caffeine.cache.Caffeine")
+public CacheService cacheService() {
+    return new CaffeineCacheService();
+}
+
+@Bean
+@ConditionalOnMissingBean(EmailService.class)
+public EmailService emailService() {
+    return new DefaultEmailService();
+}
+
+@Bean
+@ConditionalOnProperty(name = "feature.enabled", havingValue = "true")
+public FeatureService featureService() {
+    return new FeatureService();
+}
+  </code></pre>
+</div>
+
+<h3>Q15. What is the difference between @Bean and @Component?</h3>
+
+@Component is used on classes that you own and want Spring to automatically detect via component scanning.
+
+@Bean is used inside a @Configuration class to manually define and configure beans, especially for third-party classes or complex initialization logic.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class OrderService {
+    public String process() {
+        return "order processed";
+    }
+}
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+  </code></pre>
+</div>
+
+ <h3>Q16. What is a RESTful API? How does Spring Boot support building one?</h3>
+
+A RESTful API is an architectural style that uses HTTP methods to perform operations on resources. It is stateless, resource-based, and typically uses JSON for communication. Spring Boot supports REST APIs using Spring MVC with annotations like @RestController and request mapping annotations such as @GetMapping, @PostMapping, etc. Jackson automatically converts Java objects into JSON responses.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+@RequestMapping("/api/products")
+public class ProductController {
+
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @GetMapping
+    public List<Product> getAll() {
+        return productService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Product getById(@PathVariable Long id) {
+        return productService.findById(id);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Product create(@RequestBody @Valid Product product) {
+        return productService.save(product);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        productService.delete(id);
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q17. What is the difference between @PathVariable, @RequestParam, and @RequestBody?</h3>
+
+@PathVariable extracts values from the URI path, @RequestParam extracts query parameters from the URL, and @RequestBody maps the entire HTTP request body (usually JSON) to a Java object. They are used in different parts of an HTTP request based on how data is sent.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @GetMapping("/{id}")
+    public User getById(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+
+    @GetMapping
+    public List<User> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort) {
+
+        return userService.findAll(page, size, sort);
+    }
+
+    @PostMapping
+    public User create(@RequestBody @Valid CreateUserRequest request) {
+        return userService.create(request);
+    }
+
+    @PutMapping("/{id}")
+    public User update(@PathVariable Long id,
+                       @RequestParam(required = false) boolean notify,
+                       @RequestBody UpdateUserRequest request) {
+
+        return userService.update(id, request, notify);
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q18. What is ResponseEntity? Why is it used?</h3>
+
+ResponseEntity gives full control over HTTP response, including status code, headers, and body. It is used when we need to return proper REST semantics like 200 OK, 201 Created, 204 No Content, or custom headers.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Order> getOrder(@PathVariable Long id) {
+        return orderService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<Order> create(@RequestBody Order order,
+                                        UriComponentsBuilder uriBuilder) {
+
+        Order saved = orderService.create(order);
+
+        URI location = uriBuilder
+                .path("/api/orders/{id}")
+                .buildAndExpand(saved.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(saved);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        orderService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q19. What is global exception handling in Spring Boot?</h3>
+
+Global exception handling is used to handle exceptions centrally across all controllers using @ControllerAdvice or @RestControllerAdvice. It ensures consistent error responses and removes the need for try-catch blocks in controllers.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleNotFound(ResourceNotFoundException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+        error.put("status", 404);
+
+        return error;
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, Object> handleGeneric(Exception ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("message", "Internal Server Error");
+        error.put("status", 500);
+
+        return error;
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q20. What is Bean Validation in Spring Boot?</h3>
+
+Bean Validation allows automatic validation of request objects using annotations like @NotNull, @NotBlank, @Email, @Size, and @Min. When @Valid is used in controller methods, Spring automatically validates input and throws exceptions if constraints are violated.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+public class CreateUserRequest {
+
+    @NotBlank(message = "Name is required")
+    private String name;
+
+    @Email(message = "Invalid email")
+    private String email;
+
+    @Min(value = 18, message = "Minimum age is 18")
+    private int age;
+}
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @PostMapping
+    public User create(@RequestBody @Valid CreateUserRequest request) {
+        return userService.create(request);
+    }
+}
+  </code></pre>
+</div>
+
+ <!-- ── Q21 ─────────────────────────────────────────────── -->
+<h3>Q21. What is RestTemplate and WebClient? Which should you use in modern Spring Boot?</h3>
+
+RestTemplate is a synchronous (blocking) HTTP client used to call external REST APIs. WebClient is the modern reactive (non-blocking) HTTP client introduced in Spring WebFlux. WebClient is recommended for new applications because it supports async processing and better scalability, while RestTemplate is in maintenance mode.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// RestTemplate (blocking)
+RestTemplate restTemplate = new RestTemplate();
+
+WeatherData data = restTemplate.getForObject(
+    "https://api.weather.com/v1/city?name=London",
+    WeatherData.class
+);
+
+// WebClient (non-blocking)
+WebClient webClient = WebClient.create("https://api.weather.com");
+
+Mono&lt;WeatherData&gt; response = webClient.get()
+    .uri("/v1/city?name={city}", "London")
+    .retrieve()
+    .bodyToMono(WeatherData.class);
+
+// Optional blocking
+WeatherData data2 = response.block();
+  </code></pre>
+</div>
+
+<!-- ── Q22 ─────────────────────────────────────────────── -->
+<h3>Q22. What is CORS and how do you configure it in Spring Boot?</h3>
+
+CORS (Cross-Origin Resource Sharing) is a browser security mechanism that controls whether a frontend running on one domain can access APIs on another domain. Spring Boot allows CORS configuration at method level, globally using WebMvcConfigurer, or via Spring Security.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// Method-level CORS
+@CrossOrigin(origins = "https://frontend.com")
+@RestController
+public class ApiController {
+
+    @GetMapping("/public")
+    public String hello() {
+        return "open";
+    }
+}
+
+// Global CORS configuration
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+            .allowedOrigins("https://frontend.com")
+            .allowedMethods("GET", "POST", "PUT", "DELETE")
+            .allowCredentials(true);
+    }
+}
+  </code></pre>
+</div>
+
+<!-- ── Q23 ─────────────────────────────────────────────── -->
+<h3>Q23. What is Spring Transaction Management? How does @Transactional work?</h3>
+
+Spring Transaction Management ensures that a group of database operations either fully succeed or fully fail. @Transactional uses AOP to start a transaction before method execution and commits it if successful. If a RuntimeException occurs, it automatically rolls back the transaction.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@Service
+public class BankService {
+
+    @Transactional
+    public void transfer(Long from, Long to, BigDecimal amount) {
+        debit(from, amount);
+        credit(to, amount);
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;Account&gt; getAll() {
+        return repository.findAll();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void process() throws Exception {
+        // custom rollback rules
+    }
+}
+  </code></pre>
+</div>
+
+<!-- ── Q24 ─────────────────────────────────────────────── -->
+<h3>Q24. What is Spring Caching? How do @Cacheable, @CachePut, and @CacheEvict work?</h3>
+
+Spring Caching allows storing method results to improve performance by avoiding repeated database or API calls. @Cacheable stores results, @CachePut updates the cache, and @CacheEvict removes entries. It supports providers like in-memory cache, Caffeine, and Redis.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@EnableCaching
+@SpringBootApplication
+public class App { }
+
+@Service
+public class ProductService {
+
+    @Cacheable("products")
+    public Product getById(Long id) {
+        return repo.findById(id);
+    }
+
+    @CachePut(value = "products", key = "#product.id")
+    public Product update(Product product) {
+        return repo.save(product);
+    }
+
+    @CacheEvict(value = "products", key = "#id")
+    public void delete(Long id) {
+        repo.deleteById(id);
+    }
+}
+  </code></pre>
+</div>
+
+<!-- ── Q25 ─────────────────────────────────────────────── -->
+<h3>Q25. What is @Async in Spring Boot and how does it work?</h3>
+
+@Async enables asynchronous method execution by running methods in a separate thread pool managed by Spring. The caller does not wait for the method to complete. It works using Spring proxies and only functions when called from outside the same bean.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+@EnableAsync
+@SpringBootApplication
+public class App { }
+
+@Service
+public class NotificationService {
+
+    @Async
+    public void sendEmail(String email) {
+        System.out.println("Sending email...");
+    }
+
+    @Async
+    public CompletableFuture&lt;String&gt; process() {
+        return CompletableFuture.completedFuture("done");
+    }
+}
+
+@Bean
+public Executor taskExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(5);
+    executor.setMaxPoolSize(20);
+    executor.initialize();
+    return executor;
+}
+  </code></pre>
+</div> 
+
+<h3>Q26. What is Spring's @Scheduled annotation? How do you set up scheduled tasks?</h3>
+
+@Scheduled is used to run methods automatically at fixed intervals or based on cron expressions. It supports fixedRate, fixedDelay, and cron-based scheduling. You must enable scheduling using @EnableScheduling. It is commonly used for background jobs like polling APIs, cleanup tasks, or report generation.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// Enable scheduling
+@SpringBootApplication
+@EnableScheduling
+public class Application { }
+
+// Scheduled tasks
+@Component
+public class ScheduledTasks {
+
+    // Runs every 5 seconds (fixed rate)
+    @Scheduled(fixedRate = 5000)
+    public void pollExternalApi() {
+        System.out.println("Polling API...");
+    }
+
+    // Runs 10 seconds after previous execution finishes
+    @Scheduled(fixedDelay = 10000)
+    public void processQueue() {
+        System.out.println("Processing queue...");
+    }
+
+    // Cron-based scheduling
+    @Scheduled(cron = "0 30 2 * * *")
+    public void dailyCleanup() {
+        System.out.println("Running cleanup...");
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q27. What is @SpringBootTest? When should you use it?</h3>
+
+@SpringBootTest is used for integration testing in Spring Boot. It loads the full application context, including all beans and configurations. It is used when you want to test the complete flow of the application. It supports different web environments like MOCK (default), RANDOM_PORT, and NONE.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// Mock web environment (no real server)
+@SpringBootTest
+@AutoConfigureMockMvc
+public class ProductControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    public void testGetProduct() throws Exception {
+        mockMvc.perform(get("/api/products/1"))
+               .andExpect(status().isOk());
+    }
+}
+
+// Real server with random port
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class FullStackTest {
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    @LocalServerPort
+    private int port;
+
+    @Test
+    public void testHealth() {
+        String url = "http://localhost:" + port + "/actuator/health";
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q28. What is @MockBean and how is it different from @Mock?</h3>
+
+@MockBean is used in Spring Boot tests to replace a Spring-managed bean with a Mockito mock inside the application context. @Mock is used in pure unit tests without Spring context. @MockBean is useful in integration or slice tests where you want to mock dependencies inside Spring.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+// Pure unit test with Mockito
+@ExtendWith(MockitoExtension.class)
+class OrderServiceTest {
+
+    @Mock
+    private OrderRepository orderRepository;
+
+    @InjectMocks
+    private OrderService orderService;
+
+    @Test
+    void testPlaceOrder() {
+        when(orderRepository.save(any()))
+            .thenReturn(new Order(1L));
+
+        Order result = orderService.place(new OrderRequest());
+    }
+}
+
+// Spring test with mocked bean
+@WebMvcTest(OrderController.class)
+class OrderControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private OrderService orderService;
+}
+  </code></pre>
+</div>
+
+<h3>Q29. What is @WebMvcTest? How is it used?</h3>
+
+@WebMvcTest is a Spring Boot test annotation used to test only the web layer (controllers). It loads only controller-related beans and mocks all service dependencies. It is faster than @SpringBootTest and is used for testing REST APIs in isolation.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+
+@WebMvcTest(ProductController.class)
+class ProductControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private ProductService productService;
+
+    @Test
+    void testGetProduct() throws Exception {
+        mockMvc.perform(get("/api/products/1"))
+               .andExpect(status().isOk());
+    }
+
+    @Test
+    void testInvalidRequest() throws Exception {
+        mockMvc.perform(post("/api/products")
+               .contentType(MediaType.APPLICATION_JSON)
+               .content("{}"))
+               .andExpect(status().isBadRequest());
+    }
+}
+  </code></pre>
+</div>
+
+<h3>Q30. What is the difference between unit testing and integration testing in Spring Boot?</h3>
+
+Unit testing tests a single class in isolation using mocks and does not load Spring context. Integration testing loads the Spring context and tests how multiple components work together, often using a real or in-memory database.
+
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+
+// Unit test (Mockito only)
+@ExtendWith(MockitoExtension.class)
+class DiscountServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private DiscountService discountService;
+
+    @Test
+    void testDiscount() {
+        when(userRepository.findById(1L))
+            .thenReturn(Optional.of(new User(1L, true)));
+
+        double discount = discountService.calculate(1L, 100.0);
+    }
+}
+
+// Integration test (Spring context)
+@SpringBootTest
+@Transactional
+class OrderIntegrationTest {
+
+    @Autowired
+    private OrderService orderService;
+
+    @Test
+    void testOrderFlow() {
+        Order order = orderService.place(new OrderRequest("Alice", 2));
+    }
+}
+  </code></pre>
+</div>
