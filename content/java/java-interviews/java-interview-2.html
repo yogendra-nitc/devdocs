@@ -1,566 +1,622 @@
 <p class="intro">Interview questions on Error, Exception and Multithreading</p>
 
-<h2>The Code</h2>
+<h3>1. What is the difference between an Exception and an Error in Java? Can you recover from each?</h3>
+Both Exception and Error extend Throwable, but they signal very different problems. An Exception represents a condition that a program can anticipate and handle — things like a missing file, a bad network connection, or invalid user input. An Error represents a serious JVM-level problem that is almost always unrecoverable — things like running out of heap memory (OutOfMemoryError) or a stack overflow (StackOverflowError). In practice you should catch Exceptions and handle them gracefully, but you should rarely (if ever) try to catch Errors.
 <div class="code-block">
   <span class="code-label">Java</span>
-  <pre><code>public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
+  <pre><code>
+    // Exception — recoverable, you SHOULD handle it
+    try {
+        FileReader fr = new FileReader("config.txt");
+    } catch (FileNotFoundException e) {
+        System.out.println("File missing, using defaults.");
     }
-}</code></pre>
+
+    // Error — almost always unrecoverable, do NOT try to catch
+    // OutOfMemoryError → JVM heap exhausted
+    // StackOverflowError → infinite recursion example:
+    void recurse() { recurse(); }   // will throw StackOverflowError
+  </code></pre>
 </div>
 
-<h2>Running the Program</h2>
-<div class="code-block">
-  <span class="code-label">Terminal</span>
-  <pre><code># Step 1: Compile
-javac HelloWorld.java
-
-# Step 2: Run
-java HelloWorld
-
-# Output
-Hello, World!</code></pre>
-</div>
-
-
-
-Q1
-What is the difference between an Exception and an Error in Java? Can you recover from each?
-Exception
-Both Exception and Error extend Throwable, but they signal very different problems. An Exception represents a condition that a program can anticipate and handle — things like a missing file, a bad network connection, or invalid user input. An Error represents a serious JVM-level problem that is almost always unrecoverable — things like running out of heap memory (OutOfMemoryError) or a stack overflow (StackOverflowError). In practice you should catch Exceptions and handle them gracefully, but you should rarely (if ever) try to catch Errors.
-
-// Exception — recoverable, you SHOULD handle it
-try {
-    FileReader fr = new FileReader("config.txt");
-} catch (FileNotFoundException e) {
-    System.out.println("File missing, using defaults.");
-}
-
-// Error — almost always unrecoverable, do NOT try to catch
-// OutOfMemoryError → JVM heap exhausted
-// StackOverflowError → infinite recursion example:
-void recurse() { recurse(); }   // will throw StackOverflowError
-Q2
-What are checked and unchecked exceptions? Why does Java have both?
-Exception
+<h3>2. What are checked and unchecked exceptions? Why does Java have both?</h3>
 Checked exceptions are checked by the compiler at compile time. If a method can throw one, the caller MUST either catch it or declare it with 'throws'. They model recoverable, predictable situations (file not found, SQL error). Unchecked exceptions (RuntimeException and its subclasses) are not checked at compile time. They typically represent programming bugs — null pointer, array index out of bounds, illegal argument. Java has both so the compiler can enforce error handling for important external failures, while not burdening code with try/catch for every arithmetic or null-check error.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Checked — compiler FORCES you to handle it
+    public void readFile(String path) throws IOException {
+        FileReader fr = new FileReader(path);  // must declare or catch
+    }
 
-// Checked — compiler FORCES you to handle it
-public void readFile(String path) throws IOException {
-    FileReader fr = new FileReader(path);  // must declare or catch
-}
+    // Unchecked — compiler does NOT force handling
+    public int divide(int a, int b) {
+        return a / b;  // throws ArithmeticException if b==0, no catch required
+    }
 
-// Unchecked — compiler does NOT force handling
-public int divide(int a, int b) {
-    return a / b;  // throws ArithmeticException if b==0, no catch required
-}
+    // NullPointerException, ArrayIndexOutOfBoundsException,
+    // IllegalArgumentException, ClassCastException are all unchecked
+  </code></pre>
+</div>
 
-// NullPointerException, ArrayIndexOutOfBoundsException,
-// IllegalArgumentException, ClassCastException are all unchecked
-Q3
-Explain the try-catch-finally block. What is the purpose of finally and when does it NOT execute?
-Exception
+<h3>Q3. Explain the try-catch-finally block. What is the purpose of finally and when does it NOT execute?"</h3>
 try contains the code that might throw. catch handles specific exception types — you can have multiple catch blocks. finally runs after the try/catch completes, whether an exception occurred or not. It is the right place to release resources (close files, database connections). finally does NOT execute if System.exit() is called inside the try block, or if the JVM crashes, or if the thread running the code is killed.
-
-FileReader fr = null;
-try {
-    fr = new FileReader("data.txt");
-    int data = fr.read();
-} catch (FileNotFoundException e) {
-    System.out.println("File not found: " + e.getMessage());
-} catch (IOException e) {
-    System.out.println("Read error: " + e.getMessage());
-} finally {
-    if (fr != null) {
-        try { fr.close(); } catch (IOException e) { e.printStackTrace(); }
-    }
-    System.out.println("Finally always runs — cleanup done.");
-}
-Q4
-What is try-with-resources? How does it improve on the traditional try-finally pattern?
-Exception
-Try-with-resources (Java 7+) automatically closes any resource that implements AutoCloseable at the end of the try block, whether it completed normally or threw. This eliminates the verbose and error-prone null-check code in finally blocks, and it correctly handles the case where both the try body AND the close() call throw an exception (the close exception is suppressed rather than silently replacing the original).
-
-// Old way — verbose, easy to forget close()
-BufferedReader br = null;
-try {
-    br = new BufferedReader(new FileReader("file.txt"));
-    String line = br.readLine();
-} finally {
-    if (br != null) br.close();
-}
-
-// New way — automatic, clean, correct
-try (BufferedReader br = new BufferedReader(new FileReader("file.txt"))) {
-    String line = br.readLine();
-    System.out.println(line);
-}   // br.close() called automatically here
-Q5
-What is exception chaining (wrapping)? Why is it important when handling exceptions in layered applications?
-Exception
-Exception chaining means catching one exception and throwing a new, higher-level exception that includes the original as its 'cause'. This is important in layered architectures: the service layer should not expose raw SQLException to the controller — it wraps it in a DataAccessException. The original cause is preserved so developers can see the full chain in the stack trace. Without chaining, the root cause would be lost.
-
-// DAO layer
-public User findUser(int id) throws DataAccessException {
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    FileReader fr = null;
     try {
-        // database call that might fail
-        return db.query("SELECT * FROM users WHERE id = ?", id);
-    } catch (SQLException e) {
-        throw new DataAccessException("Failed to fetch user " + id, e); // chaining
-    }
-}
-
-// Caller sees DataAccessException but can drill into cause:
-try {
-    User u = dao.findUser(42);
-} catch (DataAccessException e) {
-    e.printStackTrace();       // shows full chain
-    Throwable root = e.getCause(); // original SQLException
-}
-Q6
-How do you create a custom exception in Java? When should you create one instead of using a built-in exception?
-Exception
-Extend Exception (for checked) or RuntimeException (for unchecked). Create a custom exception when the built-in exceptions don't convey the right meaning for your domain, or when you need to carry additional domain-specific data alongside the message. For example, a payment service should throw InsufficientFundsException, not just IllegalStateException, so callers can catch it specifically and display a meaningful message.
-
-// Custom checked exception with extra context
-public class InsufficientFundsException extends Exception {
-    private final double balance;
-    private final double amount;
-
-    public InsufficientFundsException(double balance, double amount) {
-        super(String.format("Balance %.2f is less than required %.2f", balance, amount));
-        this.balance = balance;
-        this.amount  = amount;
-    }
-
-    public double getBalance() { return balance; }
-    public double getAmount()  { return amount; }
-}
-
-// Usage
-throw new InsufficientFundsException(50.0, 200.0);
-Q7
-What happens when an exception is thrown inside a catch block or a finally block?
-Exception
-If an exception is thrown inside a catch block, the finally block still executes first, then the new exception propagates up — the original handled exception is gone. If an exception is thrown inside a finally block, it REPLACES the original exception (the original is lost unless you chain it manually). This is a common bug. Try-with-resources handles this better by suppressing the close() exception and keeping the original.
-
-try {
-    throw new RuntimeException("original");
-} catch (RuntimeException e) {
-    System.out.println("Caught: " + e.getMessage());
-    throw new RuntimeException("from catch");  // original is gone
-} finally {
-    System.out.println("Finally runs before 'from catch' propagates");
-    // If you also throw here, 'from catch' would be lost too!
-    // throw new RuntimeException("from finally"); // DON'T do this
-}
-Q8
-Can you catch multiple exceptions in a single catch block? What is a multi-catch block?
-Exception
-Java 7 introduced multi-catch, which lets a single catch clause handle multiple unrelated exception types using a pipe (|) separator. This avoids code duplication when the handling logic is identical. The caught exception variable is implicitly final in a multi-catch, so you cannot reassign it. You cannot use multi-catch for exceptions that have an inheritance relationship (e.g. IOException | FileNotFoundException), because one already covers the other.
-
-// Before Java 7 — duplicated handling code
-try { riskyOp(); }
-catch (IOException e)     { log(e); notify(e); }
-catch (SQLException e)    { log(e); notify(e); }  // same code, twice
-
-// Java 7+ multi-catch — DRY and clean
-try {
-    riskyOp();
-} catch (IOException | SQLException e) {
-    log(e);    // 'e' is effectively final here
-    notify(e);
-}
-Q9
-What is the difference between throw and throws in Java?
-Exception
-'throw' is a statement inside a method body — it actually raises an exception at that point in the code. 'throws' is a declaration in the method signature — it tells callers that this method might propagate a checked exception and they must handle it. A method can declare 'throws' without ever actually throwing, and a method can throw unchecked exceptions without declaring them in 'throws'.
-
-// 'throws' in the signature — a contract with the caller
-public void loadConfig(String path) throws IOException {
-    if (path == null) {
-        throw new IllegalArgumentException("path cannot be null");  // 'throw' statement
-    }
-    FileReader fr = new FileReader(path);  // might throw IOException
-}
-
-// Caller must deal with the checked exception
-try {
-    loadConfig("app.properties");
-} catch (IOException e) {
-    System.out.println("Could not load config: " + e.getMessage());
-}
-Q10
-What is a NullPointerException and what are the best practices to avoid it?
-Exception
-NullPointerException (NPE) is thrown at runtime when you try to use a reference that holds null — calling a method on it, accessing its fields, or using it in an array operation. Java 14+ provides helpful NPE messages that tell you exactly which variable was null. Best practices: use Optional for values that might be absent, apply null checks defensively, prefer non-null defaults, use annotations like @NonNull, and adopt the Objects utility class.
-
-// Causes NPE
-String name = null;
-int len = name.length();  // NullPointerException here
-
-// Fix 1: null check
-if (name != null) { int len = name.length(); }
-
-// Fix 2: Optional (Java 8+) — expressive, no NPE
-Optional<String> optName = Optional.ofNullable(getName());
-int len = optName.map(String::length).orElse(0);
-
-// Fix 3: Objects utility
-String safe = Objects.requireNonNullElse(name, "default");
-
-// Fix 4: Java 14+ helpful message tells you which variable
-// NullPointerException: Cannot invoke "String.length()" because "name" is null
-Q11
-What is a thread in Java? What is the difference between a process and a thread?
-Thread
-A process is an independent program running in its own memory space — your Java application is a process. A thread is a lightweight unit of execution that lives inside a process. Multiple threads share the process's heap memory, which makes communication easy but also introduces concurrency risks. Java makes thread creation easy, but the shared memory model means you must carefully synchronise access to shared data.
-
-// Every Java program starts with at least one thread: the main thread
-public class Demo {
-    public static void main(String[] args) {
-        System.out.println("Thread: " + Thread.currentThread().getName()); // main
-
-        Thread t = new Thread(() -> {
-            System.out.println("Thread: " + Thread.currentThread().getName()); // Thread-0
-        });
-        t.start();
-    }
-}
-// The heap (objects, static fields) is shared between main and Thread-0
-// The stack (local variables, method calls) is private to each thread
-Q12
-What are the two ways to create a thread in Java? Which is preferred and why?
-Thread
-Way 1: Extend Thread and override run(). Way 2: Implement Runnable and pass it to a Thread constructor. The Runnable approach is almost always preferred because Java only allows single inheritance — if you extend Thread, you lose the ability to extend anything else. More importantly, implementing Runnable separates the task (what to do) from the thread mechanism (how to run it), which is a better design. You can also use lambda expressions for Runnable, keeping code concise.
-
-// Way 1: extend Thread (limits your class hierarchy)
-class MyThread extends Thread {
-    public void run() { System.out.println("Running via Thread subclass"); }
-}
-new MyThread().start();
-
-// Way 2: implement Runnable (preferred)
-class MyTask implements Runnable {
-    public void run() { System.out.println("Running via Runnable"); }
-}
-new Thread(new MyTask()).start();
-
-// Way 2 with lambda (cleanest)
-new Thread(() -> System.out.println("Running via lambda")).start();
-Q13
-Explain the thread lifecycle in Java. What states can a thread be in?
-Thread
-A thread moves through six states: NEW (created but not started), RUNNABLE (running or ready to run, waiting for CPU), BLOCKED (waiting to acquire a monitor lock), WAITING (waiting indefinitely for another thread to signal it — via wait() or join()), TIMED_WAITING (waiting for a specified duration — via sleep() or wait(timeout)), and TERMINATED (finished execution). Understanding these states helps when debugging deadlocks and performance issues.
-
-Thread t = new Thread(() -> {
-    try {
-        Thread.sleep(1000);  // TIMED_WAITING during sleep
-    } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-    }
-});
-
-System.out.println(t.getState()); // NEW — not started yet
-t.start();
-System.out.println(t.getState()); // RUNNABLE or TIMED_WAITING
-t.join();                          // main thread waits for t
-System.out.println(t.getState()); // TERMINATED
-Q14
-What is the difference between start() and run() in Thread? What happens if you call run() directly?
-Thread
-start() creates a new OS-level thread and then calls run() on it asynchronously. If you call run() directly, no new thread is created — the run() method executes on the current (calling) thread, just like a regular method call. This is a common beginner mistake: the code looks correct but runs sequentially on a single thread.
-
-Thread t = new Thread(() -> {
-    System.out.println("Executed by: " + Thread.currentThread().getName());
-});
-
-t.start(); // NEW thread created → prints "Thread-0"
-t.run();   // NO new thread → prints "main" (runs on calling thread)
-
-// If you call start() twice on the same Thread object,
-// you get IllegalThreadStateException
-Q15
-What is synchronization in Java? Why is it needed?
-Thread
-Synchronization prevents multiple threads from accessing shared mutable data concurrently in a way that produces incorrect results. Without it, you get race conditions — the final value of a shared variable depends on the unpredictable order threads execute. The 'synchronized' keyword makes a block or method mutually exclusive: only one thread can execute it at a time. The cost is reduced parallelism, so you synchronize only what's necessary.
-
-class Counter {
-    private int count = 0;
-
-    // Without synchronized: multiple threads increment simultaneously
-    // and some increments are lost (race condition)
-    public synchronized void increment() {
-        count++;   // read-modify-write is now atomic
-    }
-
-    public synchronized int getCount() { return count; }
-}
-
-Counter c = new Counter();
-Thread t1 = new Thread(() -> { for(int i=0;i<1000;i++) c.increment(); });
-Thread t2 = new Thread(() -> { for(int i=0;i<1000;i++) c.increment(); });
-t1.start(); t2.start();
-t1.join();  t2.join();
-System.out.println(c.getCount()); // always 2000, never a race result
-Q16
-What is a deadlock? How does it occur and how can you prevent it?
-Thread
-A deadlock occurs when two (or more) threads are each waiting for a lock held by the other, so neither can proceed. Thread A holds lock 1 and waits for lock 2. Thread B holds lock 2 and waits for lock 1. Both are stuck forever. Prevention strategies: always acquire multiple locks in the same fixed order across all threads; use tryLock() with a timeout instead of blocking indefinitely; minimize lock scope; prefer higher-level concurrency utilities.
-
-Object lock1 = new Object();
-Object lock2 = new Object();
-
-Thread t1 = new Thread(() -> {
-    synchronized(lock1) {
-        Thread.sleep(50);           // hold lock1, pause
-        synchronized(lock2) { }    // wait for lock2 — DEADLOCK
-    }
-});
-
-Thread t2 = new Thread(() -> {
-    synchronized(lock2) {          // hold lock2
-        synchronized(lock1) { }    // wait for lock1 — DEADLOCK
-    }
-});
-
-// FIX: both threads acquire lock1 THEN lock2 (same order)
-// Or use: ReentrantLock.tryLock(timeout, unit)
-Q17
-What is the volatile keyword? When should you use it instead of synchronized?
-Thread
-volatile guarantees that a variable's value is always read from and written to main memory, not from a thread's local CPU cache. Without it, one thread might cache the value and never see updates made by another thread (visibility problem). Use volatile when: one thread writes and others only read, and the write is a single atomic operation (not compound like count++). Do NOT use volatile as a replacement for synchronization when multiple threads both read and write, or when you need atomicity of compound actions.
-
-class Server {
-    private volatile boolean running = true;  // visible across threads
-
-    public void stop() {
-        running = false;  // write visible immediately to all threads
-    }
-
-    public void run() {
-        while (running) {   // reads fresh value each time
-            processRequest();
-        }
-    }
-}
-
-// volatile is NOT enough for this — use AtomicInteger or synchronized:
-private volatile int count = 0;
-count++;  // NOT atomic: read + increment + write — race condition still exists
-Q18
-What is the ExecutorService and why is it preferred over creating threads manually?
-Thread
-ExecutorService is part of java.util.concurrent and manages a pool of threads for you. Creating a new Thread for every task is expensive (thread creation has OS overhead) and uncontrolled (10,000 tasks = 10,000 threads = JVM crash). ExecutorService reuses threads, limits concurrency, queues excess tasks, and handles thread lifecycle. Executors.newFixedThreadPool(n) creates a pool of n threads. Always shut down the executor when done to free resources.
-
-ExecutorService pool = Executors.newFixedThreadPool(4);  // 4 worker threads
-
-for (int i = 0; i < 10; i++) {
-    final int taskId = i;
-    pool.submit(() -> {
-        System.out.println("Task " + taskId + " on " + Thread.currentThread().getName());
-    });
-}
-
-pool.shutdown();              // stop accepting new tasks
-pool.awaitTermination(5, TimeUnit.SECONDS);  // wait for running tasks to finish
-// At most 4 threads run concurrently — 10 tasks queued and processed in batches
-Q19
-What is the difference between Runnable and Callable? What does a Callable return?
-Thread
-Runnable.run() returns void and cannot throw checked exceptions. Callable.call() returns a value of type V and can throw checked exceptions. This makes Callable much more useful for tasks that compute a result or might fail with a checked exception. You submit a Callable to an ExecutorService and get back a Future, which you can use to retrieve the result (or exception) when the task finishes.
-
-ExecutorService pool = Executors.newFixedThreadPool(2);
-
-// Callable — returns a result
-Callable<Integer> task = () -> {
-    Thread.sleep(100);
-    return 42;          // can return a value and throw checked exceptions
-};
-
-Future<Integer> future = pool.submit(task);
-
-// Do other work here while task runs in background...
-
-int result = future.get();  // blocks until result is ready
-System.out.println("Result: " + result);  // 42
-pool.shutdown();
-Q20
-What is a race condition? Can you walk through a concrete example?
-Thread
-A race condition occurs when the correctness of a program depends on the relative timing or interleaving of multiple threads. The classic example is a bank transfer: Thread A reads the balance (500), Thread B also reads the balance (500), A subtracts 100 and writes 400, B subtracts 200 and writes 300 — but the balance should be 200. Both reads happened before either write, so B overwrote A's update. The fix is to make the read-modify-write sequence atomic.
-
-class BankAccount {
-    private int balance = 500;
-
-    // BROKEN — race condition
-    public void withdraw(int amount) {
-        if (balance >= amount) {      // Thread A reads 500, Thread B reads 500
-            balance -= amount;        // A writes 400, then B writes 300 (should be 200)
-        }
-    }
-
-    // FIXED — synchronized makes the block atomic
-    public synchronized void withdrawSafe(int amount) {
-        if (balance >= amount) {
-            balance -= amount;
-        }
-    }
-}
-Q21
-What is the wait(), notify(), and notifyAll() mechanism? How does it differ from sleep()?
-Thread
-wait(), notify(), and notifyAll() are inter-thread communication methods on Object. A thread calls wait() inside a synchronized block — it releases the lock and suspends until another thread calls notify() (wakes one waiting thread) or notifyAll() (wakes all) on the same object. sleep() simply pauses the thread for a time but does NOT release the lock. wait() is for coordination between threads; sleep() is just a pause.
-
-class MessageQueue {
-    private String message;
-
-    public synchronized void produce(String msg) throws InterruptedException {
-        while (message != null) wait();   // wait if buffer is full
-        this.message = msg;
-        System.out.println("Produced: " + msg);
-        notify();  // wake the waiting consumer
-    }
-
-    public synchronized String consume() throws InterruptedException {
-        while (message == null) wait();   // wait if buffer is empty
-        String msg = message;
-        message = null;
-        System.out.println("Consumed: " + msg);
-        notify();  // wake the waiting producer
-        return msg;
-    }
-}
-Q22
-What is the ReentrantLock? What advantages does it have over synchronized?
-Thread
-ReentrantLock (java.util.concurrent.locks) is an explicit lock with more features than synchronized. Key advantages: tryLock() tries to acquire the lock without blocking (great for avoiding deadlocks), lockInterruptibly() allows the waiting thread to be interrupted, you can have separate Condition objects for fine-grained wait/notify, and you can query lock state (isLocked(), getHoldCount()). The name 'reentrant' means the same thread can acquire the lock multiple times without deadlocking itself — just as synchronized is reentrant.
-
-ReentrantLock lock = new ReentrantLock();
-
-// tryLock — non-blocking attempt, avoids deadlock
-if (lock.tryLock(500, TimeUnit.MILLISECONDS)) {
-    try {
-        // critical section
-        processOrder();
+        fr = new FileReader("data.txt");
+        int data = fr.read();
+    } catch (FileNotFoundException e) {
+        System.out.println("File not found: " + e.getMessage());
+    } catch (IOException e) {
+        System.out.println("Read error: " + e.getMessage());
     } finally {
-        lock.unlock();  // MUST unlock in finally — no auto-release
+        if (fr != null) {
+            try { fr.close(); } catch (IOException e) { e.printStackTrace(); }
+        }
+        System.out.println("Finally always runs — cleanup done.");
     }
-} else {
-    System.out.println("Could not acquire lock, skipping");
-}
+  </code></pre>
+</div>
 
-// ReentrantLock is reentrant — same thread can lock again:
-lock.lock();
-lock.lock();   // does not deadlock
-System.out.println(lock.getHoldCount()); // 2
-lock.unlock(); lock.unlock();
-Q23
-What are atomic classes in Java? When would you use AtomicInteger instead of synchronized int?
-Thread
-The java.util.concurrent.atomic package provides classes like AtomicInteger, AtomicLong, AtomicBoolean, and AtomicReference. They use hardware-level compare-and-swap (CAS) instructions to perform atomic operations without locking. This makes them faster than synchronized for simple counter or flag updates that are accessed by many threads. Use them when you need atomic single-variable operations; use synchronized when you need to protect a block of multiple statements.
+<h3>Q4. What is try-with-resources? How does it improve on the traditional try-finally pattern?</h3>
+Try-with-resources (Java 7+) automatically closes any resource that implements AutoCloseable at the end of the try block, whether it completed normally or threw. This eliminates the verbose and error-prone null-check code in finally blocks, and it correctly handles the case where both the try body AND the close() call throw an exception (the close exception is suppressed rather than silently replacing the original).
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Old way — verbose, easy to forget close()
+    BufferedReader br = null;
+    try {
+        br = new BufferedReader(new FileReader("file.txt"));
+        String line = br.readLine();
+    } finally {
+        if (br != null) br.close();
+    }
 
-// synchronized approach — correct but slower due to lock overhead
-private int count = 0;
-public synchronized void increment() { count++; }
+    // New way — automatic, clean, correct
+    try (BufferedReader br = new BufferedReader(new FileReader("file.txt"))) {
+        String line = br.readLine();
+        System.out.println(line);
+    }   // br.close() called automatically here
+  </code></pre>
+</div>
 
-// AtomicInteger — faster, no lock contention
-private AtomicInteger atomicCount = new AtomicInteger(0);
-public void increment() { atomicCount.incrementAndGet(); }  // atomic, no lock
-
-// Other useful methods:
-atomicCount.compareAndSet(10, 20);  // sets to 20 only if current value is 10
-int old = atomicCount.getAndAdd(5); // adds 5, returns old value
-
-// Use AtomicReference for object references:
-AtomicReference<String> ref = new AtomicReference<>("initial");
-ref.compareAndSet("initial", "updated");
-Q24
-What is the ThreadLocal class? Give a practical use case.
-Thread
-ThreadLocal provides each thread with its own independent copy of a variable. Threads don't share ThreadLocal values, so no synchronization is needed. The classic use case is web applications: each request is handled by a different thread, and you want to store the current logged-in user or a database connection specific to that request without passing it through every method call. Always call remove() when done to avoid memory leaks in thread pools (where threads are reused).
-
-// Storing per-thread user context in a web app
-public class UserContext {
-    private static final ThreadLocal<String> currentUser = new ThreadLocal<>();
-
-    public static void set(String user)   { currentUser.set(user); }
-    public static String get()            { return currentUser.get(); }
-    public static void clear()            { currentUser.remove(); }  // IMPORTANT in thread pools
-}
-
-// In a request filter:
-UserContext.set("alice@example.com");
-
-// Anywhere in the call stack, same thread:
-String user = UserContext.get();  // "alice@example.com"
-auditLog.record("Action by " + user);
-
-// After request completes:
-UserContext.clear();
-Q25
-What is the CountDownLatch? How is it different from join()?
-Thread
-CountDownLatch is a synchronizer that lets one or more threads wait until a set of operations in other threads completes. You initialise it with a count, other threads call countDown() when they finish their piece, and waiting threads call await(). Unlike join(), CountDownLatch works with any number of threads (not just one) and decouples the waiting logic from specific Thread objects — so it works well with thread pools where you don't have direct Thread references.
-
-int workerCount = 3;
-CountDownLatch latch = new CountDownLatch(workerCount);
-ExecutorService pool = Executors.newFixedThreadPool(workerCount);
-
-for (int i = 0; i < workerCount; i++) {
-    final int id = i;
-    pool.submit(() -> {
+<h3>Q5. What is exception chaining (wrapping)? Why is it important when handling exceptions in layered applications?</h3>
+Exception chaining means catching one exception and throwing a new, higher-level exception that includes the original as its 'cause'. This is important in layered architectures: the service layer should not expose raw SQLException to the controller — it wraps it in a DataAccessException. The original cause is preserved so developers can see the full chain in the stack trace. Without chaining, the root cause would be lost.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // DAO layer
+    public User findUser(int id) throws DataAccessException {
         try {
-            System.out.println("Worker " + id + " processing...");
-            Thread.sleep(500);
+            // database call that might fail
+            return db.query("SELECT * FROM users WHERE id = ?", id);
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to fetch user " + id, e); // chaining
+        }
+    }
+
+    // Caller sees DataAccessException but can drill into cause:
+    try {
+        User u = dao.findUser(42);
+    } catch (DataAccessException e) {
+        e.printStackTrace();       // shows full chain
+        Throwable root = e.getCause(); // original SQLException
+    }
+  </code></pre>
+</div>
+
+<h3>Q6. How do you create a custom exception in Java? When should you create one instead of using a built-in exception?</h3>
+Extend Exception (for checked) or RuntimeException (for unchecked). Create a custom exception when the built-in exceptions don't convey the right meaning for your domain, or when you need to carry additional domain-specific data alongside the message. For example, a payment service should throw InsufficientFundsException, not just IllegalStateException, so callers can catch it specifically and display a meaningful message.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Custom checked exception with extra context
+    public class InsufficientFundsException extends Exception {
+        private final double balance;
+        private final double amount;
+
+        public InsufficientFundsException(double balance, double amount) {
+            super(String.format("Balance %.2f is less than required %.2f", balance, amount));
+            this.balance = balance;
+            this.amount  = amount;
+        }
+
+        public double getBalance() { return balance; }
+        public double getAmount()  { return amount; }
+    }
+
+    // Usage
+    throw new InsufficientFundsException(50.0, 200.0);
+  </code></pre>
+</div>
+
+<h3>7. What happens when an exception is thrown inside a catch block or a finally block?</h3>
+If an exception is thrown inside a catch block, the finally block still executes first, then the new exception propagates up — the original handled exception is gone. If an exception is thrown inside a finally block, it REPLACES the original exception (the original is lost unless you chain it manually). This is a common bug. Try-with-resources handles this better by suppressing the close() exception and keeping the original.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    try {
+        throw new RuntimeException("original");
+    } catch (RuntimeException e) {
+        System.out.println("Caught: " + e.getMessage());
+        throw new RuntimeException("from catch");  // original is gone
+    } finally {
+        System.out.println("Finally runs before 'from catch' propagates");
+        // If you also throw here, 'from catch' would be lost too!
+        // throw new RuntimeException("from finally"); // DON'T do this
+    }
+  </code></pre>
+</div>
+
+<h3>8. Can you catch multiple exceptions in a single catch block? What is a multi-catch block?</h3>
+Java 7 introduced multi-catch, which lets a single catch clause handle multiple unrelated exception types using a pipe (|) separator. This avoids code duplication when the handling logic is identical. The caught exception variable is implicitly final in a multi-catch, so you cannot reassign it. You cannot use multi-catch for exceptions that have an inheritance relationship (e.g. IOException | FileNotFoundException), because one already covers the other.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Before Java 7 — duplicated handling code
+    try { riskyOp(); }
+    catch (IOException e)     { log(e); notify(e); }
+    catch (SQLException e)    { log(e); notify(e); }  // same code, twice
+
+    // Java 7+ multi-catch — DRY and clean
+    try {
+        riskyOp();
+    } catch (IOException | SQLException e) {
+        log(e);    // 'e' is effectively final here
+        notify(e);
+    }
+  </code></pre>
+</div>
+
+<h3>9. What is the difference between throw and throws in Java?</h3>
+'throw' is a statement inside a method body — it actually raises an exception at that point in the code. 'throws' is a declaration in the method signature — it tells callers that this method might propagate a checked exception and they must handle it. A method can declare 'throws' without ever actually throwing, and a method can throw unchecked exceptions without declaring them in 'throws'.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // 'throws' in the signature — a contract with the caller
+    public void loadConfig(String path) throws IOException {
+        if (path == null) {
+            throw new IllegalArgumentException("path cannot be null");  // 'throw' statement
+        }
+        FileReader fr = new FileReader(path);  // might throw IOException
+    }
+
+    // Caller must deal with the checked exception
+    try {
+        loadConfig("app.properties");
+    } catch (IOException e) {
+        System.out.println("Could not load config: " + e.getMessage());
+    }
+  </code></pre>
+</div>
+
+<h3>10. What is a NullPointerException and what are the best practices to avoid it?</h3>
+NullPointerException (NPE) is thrown at runtime when you try to use a reference that holds null — calling a method on it, accessing its fields, or using it in an array operation. Java 14+ provides helpful NPE messages that tell you exactly which variable was null. Best practices: use Optional&lt;T&gt; for values that might be absent, apply null checks defensively, prefer non-null defaults, use annotations like @NonNull, and adopt the Objects utility class.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Causes NPE
+    String name = null;
+    int len = name.length();  // NullPointerException here
+
+    // Fix 1: null check
+    if (name != null) { int len = name.length(); }
+
+    // Fix 2: Optional (Java 8+) — expressive, no NPE
+    Optional&lt;String&gt; optName = Optional.ofNullable(getName());
+    int len = optName.map(String::length).orElse(0);
+
+    // Fix 3: Objects utility
+    String safe = Objects.requireNonNullElse(name, "default");
+
+    // Fix 4: Java 14+ helpful message tells you which variable
+    // NullPointerException: Cannot invoke "String.length()" because "name" is null
+  </code></pre>
+</div>
+
+<h3>11. What is a thread in Java? What is the difference between a process and a thread?</h3>
+A process is an independent program running in its own memory space — your Java application is a process. A thread is a lightweight unit of execution that lives inside a process. Multiple threads share the process's heap memory, which makes communication easy but also introduces concurrency risks. Java makes thread creation easy, but the shared memory model means you must carefully synchronise access to shared data.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Every Java program starts with at least one thread: the main thread
+    public class Demo {
+        public static void main(String[] args) {
+            System.out.println("Thread: " + Thread.currentThread().getName()); // main
+
+            Thread t = new Thread(() -> {
+                System.out.println("Thread: " + Thread.currentThread().getName()); // Thread-0
+            });
+            t.start();
+        }
+    }
+    // The heap (objects, static fields) is shared between main and Thread-0
+    // The stack (local variables, method calls) is private to each thread
+  </code></pre>
+</div>
+
+<h3>12. What are the two ways to create a thread in Java? Which is preferred and why?</h3>
+Way 1: Extend Thread and override run(). <br>
+Way 2: Implement Runnable and pass it to a Thread constructor. The Runnable approach is almost always preferred because Java only allows single inheritance — if you extend Thread, you lose the ability to extend anything else. More importantly, implementing Runnable separates the task (what to do) from the thread mechanism (how to run it), which is a better design. You can also use lambda expressions for Runnable, keeping code concise.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Way 1: extend Thread (limits your class hierarchy)
+    class MyThread extends Thread {
+        public void run() { System.out.println("Running via Thread subclass"); }
+    }
+    new MyThread().start();
+
+    // Way 2: implement Runnable (preferred)
+    class MyTask implements Runnable {
+        public void run() { System.out.println("Running via Runnable"); }
+    }
+    new Thread(new MyTask()).start();
+
+    // Way 2 with lambda (cleanest)
+    new Thread(() -> System.out.println("Running via lambda")).start();
+  </code></pre>
+</div>
+
+<h3>13. Explain the thread lifecycle in Java. What states can a thread be in?</h3>
+A thread moves through six states: NEW (created but not started), RUNNABLE (running or ready to run, waiting for CPU), BLOCKED (waiting to acquire a monitor lock), WAITING (waiting indefinitely for another thread to signal it — via wait() or join()), TIMED_WAITING (waiting for a specified duration — via sleep() or wait(timeout)), and TERMINATED (finished execution). Understanding these states helps when debugging deadlocks and performance issues. 
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    Thread t = new Thread(() -> {
+        try {
+            Thread.sleep(1000);  // TIMED_WAITING during sleep
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        } finally {
-            latch.countDown();  // signal this worker is done
         }
     });
-}
 
-latch.await();  // main thread waits here until count reaches 0
-System.out.println("All workers done — proceeding");
-pool.shutdown();
-Q26
-What is the difference between ConcurrentHashMap and a synchronized HashMap?
-Thread
+    System.out.println(t.getState()); // NEW — not started yet
+    t.start();
+    System.out.println(t.getState()); // RUNNABLE or TIMED_WAITING
+    t.join();                          // main thread waits for t
+    System.out.println(t.getState()); // TERMINATED
+  </code></pre>
+</div>
+
+<h3>14. What is the difference between start() and run() in Thread? What happens if you call run() directly?</h3>
+start() creates a new OS-level thread and then calls run() on it asynchronously. If you call run() directly, no new thread is created — the run() method executes on the current (calling) thread, just like a regular method call. This is a common beginner mistake: the code looks correct but runs sequentially on a single thread.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    Thread t = new Thread(() -> {
+        System.out.println("Executed by: " + Thread.currentThread().getName());
+    });
+
+    t.start(); // NEW thread created → prints "Thread-0"
+    t.run();   // NO new thread → prints "main" (runs on calling thread)
+
+    // If you call start() twice on the same Thread object,
+    // you get IllegalThreadStateException
+  </code></pre>
+</div>
+
+<h3>15. What is synchronization in Java? Why is it needed?</h3>
+Synchronization prevents multiple threads from accessing shared mutable data concurrently in a way that produces incorrect results. Without it, you get race conditions — the final value of a shared variable depends on the unpredictable order threads execute. The 'synchronized' keyword makes a block or method mutually exclusive: only one thread can execute it at a time. The cost is reduced parallelism, so you synchronize only what's necessary.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class Counter {
+        private int count = 0;
+
+        // Without synchronized: multiple threads increment simultaneously
+        // and some increments are lost (race condition)
+        public synchronized void increment() {
+            count++;   // read-modify-write is now atomic
+        }
+
+        public synchronized int getCount() { return count; }
+    }
+
+    Counter c = new Counter();
+    Thread t1 = new Thread(() -> { for(int i=0;i<1000;i++) c.increment(); });
+    Thread t2 = new Thread(() -> { for(int i=0;i<1000;i++) c.increment(); });
+    t1.start(); t2.start();
+    t1.join();  t2.join();
+    System.out.println(c.getCount()); // always 2000, never a race result
+  </code></pre>
+</div>
+
+<h3>16. What is a deadlock? How does it occur and how can you prevent it?</h3>
+A deadlock occurs when two (or more) threads are each waiting for a lock held by the other, so neither can proceed. Thread A holds lock 1 and waits for lock 2. Thread B holds lock 2 and waits for lock 1. Both are stuck forever. Prevention strategies: always acquire multiple locks in the same fixed order across all threads; use tryLock() with a timeout instead of blocking indefinitely; minimize lock scope; prefer higher-level concurrency utilities.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    Object lock1 = new Object();
+    Object lock2 = new Object();
+
+    Thread t1 = new Thread(() -> {
+        synchronized(lock1) {
+            Thread.sleep(50);           // hold lock1, pause
+            synchronized(lock2) { }    // wait for lock2 — DEADLOCK
+        }
+    });
+
+    Thread t2 = new Thread(() -> {
+        synchronized(lock2) {          // hold lock2
+            synchronized(lock1) { }    // wait for lock1 — DEADLOCK
+        }
+    });
+
+    // FIX: both threads acquire lock1 THEN lock2 (same order)
+    // Or use: ReentrantLock.tryLock(timeout, unit)
+  </code></pre>
+</div>
+
+<h3>17. What is the volatile keyword? When should you use it instead of synchronized?</h3>
+volatile guarantees that a variable's value is always read from and written to main memory, not from a thread's local CPU cache. Without it, one thread might cache the value and never see updates made by another thread (visibility problem). Use volatile when: one thread writes and others only read, and the write is a single atomic operation (not compound like count++). Do NOT use volatile as a replacement for synchronization when multiple threads both read and write, or when you need atomicity of compound actions.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class Server {
+        private volatile boolean running = true;  // visible across threads
+
+        public void stop() {
+            running = false;  // write visible immediately to all threads
+        }
+
+        public void run() {
+            while (running) {   // reads fresh value each time
+                processRequest();
+            }
+        }
+    }
+
+    // volatile is NOT enough for this — use AtomicInteger or synchronized:
+    private volatile int count = 0;
+    count++;  // NOT atomic: read + increment + write — race condition still exists
+  </code></pre>
+</div>
+
+<h3>18. What is the ExecutorService and why is it preferred over creating threads manually?</h3>
+ExecutorService is part of java.util.concurrent and manages a pool of threads for you. Creating a new Thread for every task is expensive (thread creation has OS overhead) and uncontrolled (10,000 tasks = 10,000 threads = JVM crash). ExecutorService reuses threads, limits concurrency, queues excess tasks, and handles thread lifecycle. Executors.newFixedThreadPool(n) creates a pool of n threads. Always shut down the executor when done to free resources.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    ExecutorService pool = Executors.newFixedThreadPool(4);  // 4 worker threads
+
+    for (int i = 0; i < 10; i++) {
+        final int taskId = i;
+        pool.submit(() -> {
+            System.out.println("Task " + taskId + " on " + Thread.currentThread().getName());
+        });
+    }
+
+    pool.shutdown();              // stop accepting new tasks
+    pool.awaitTermination(5, TimeUnit.SECONDS);  // wait for running tasks to finish
+    // At most 4 threads run concurrently — 10 tasks queued and processed in batches
+  </code></pre>
+</div>
+
+<h3>19. What is the difference between Runnable and Callable? What does a Callable return?</h3>
+Runnable.run() returns void and cannot throw checked exceptions. Callable<V>.call() returns a value of type V and can throw checked exceptions. This makes Callable much more useful for tasks that compute a result or might fail with a checked exception. You submit a Callable to an ExecutorService and get back a Future<V>, which you can use to retrieve the result (or exception) when the task finishes.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+
+    // Callable — returns a result
+    Callable<Integer> task = () -> {
+        Thread.sleep(100);
+        return 42;          // can return a value and throw checked exceptions
+    };
+
+    Future<Integer> future = pool.submit(task);
+
+    // Do other work here while task runs in background...
+
+    int result = future.get();  // blocks until result is ready
+    System.out.println("Result: " + result);  // 42
+    pool.shutdown();
+  </code></pre>
+</div>
+
+<h3>20. What is a race condition? Can you walk through a concrete example?</h3>
+A race condition occurs when the correctness of a program depends on the relative timing or interleaving of multiple threads. The classic example is a bank transfer: Thread A reads the balance (500), Thread B also reads the balance (500), A subtracts 100 and writes 400, B subtracts 200 and writes 300 — but the balance should be 200. Both reads happened before either write, so B overwrote A's update. The fix is to make the read-modify-write sequence atomic.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class BankAccount {
+        private int balance = 500;
+
+        // BROKEN — race condition
+        public void withdraw(int amount) {
+            if (balance >= amount) {      // Thread A reads 500, Thread B reads 500
+                balance -= amount;        // A writes 400, then B writes 300 (should be 200)
+            }
+        }
+
+        // FIXED — synchronized makes the block atomic
+        public synchronized void withdrawSafe(int amount) {
+            if (balance >= amount) {
+                balance -= amount;
+            }
+        }
+    }
+  </code></pre>
+</div>
+
+<h3>21. What is the wait(), notify(), and notifyAll() mechanism? How does it differ from sleep()?</h3>
+wait(), notify(), and notifyAll() are inter-thread communication methods on Object. A thread calls wait() inside a synchronized block — it releases the lock and suspends until another thread calls notify() (wakes one waiting thread) or notifyAll() (wakes all) on the same object. sleep() simply pauses the thread for a time but does NOT release the lock. wait() is for coordination between threads; sleep() is just a pause.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    class MessageQueue {
+        private String message;
+
+        public synchronized void produce(String msg) throws InterruptedException {
+            while (message != null) wait();   // wait if buffer is full
+            this.message = msg;
+            System.out.println("Produced: " + msg);
+            notify();  // wake the waiting consumer
+        }
+
+        public synchronized String consume() throws InterruptedException {
+            while (message == null) wait();   // wait if buffer is empty
+            String msg = message;
+            message = null;
+            System.out.println("Consumed: " + msg);
+            notify();  // wake the waiting producer
+            return msg;
+        }
+    }
+  </code></pre>
+</div>
+
+<h3>22. What is the ReentrantLock? What advantages does it have over synchronized?</h3>
+ReentrantLock (java.util.concurrent.locks) is an explicit lock with more features than synchronized. Key advantages: tryLock() tries to acquire the lock without blocking (great for avoiding deadlocks), lockInterruptibly() allows the waiting thread to be interrupted, you can have separate Condition objects for fine-grained wait/notify, and you can query lock state (isLocked(), getHoldCount()). The name 'reentrant' means the same thread can acquire the lock multiple times without deadlocking itself — just as synchronized is reentrant.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    ReentrantLock lock = new ReentrantLock();
+
+    // tryLock — non-blocking attempt, avoids deadlock
+    if (lock.tryLock(500, TimeUnit.MILLISECONDS)) {
+        try {
+            // critical section
+            processOrder();
+        } finally {
+            lock.unlock();  // MUST unlock in finally — no auto-release
+        }
+    } else {
+        System.out.println("Could not acquire lock, skipping");
+    }
+
+    // ReentrantLock is reentrant — same thread can lock again:
+    lock.lock();
+    lock.lock();   // does not deadlock
+    System.out.println(lock.getHoldCount()); // 2
+    lock.unlock(); lock.unlock();
+  </code></pre>
+</div>
+
+<h3>23. What are atomic classes in Java? When would you use AtomicInteger instead of synchronized int?</h3>
+The java.util.concurrent.atomic package provides classes like AtomicInteger, AtomicLong, AtomicBoolean, and AtomicReference. They use hardware-level compare-and-swap (CAS) instructions to perform atomic operations without locking. This makes them faster than synchronized for simple counter or flag updates that are accessed by many threads. Use them when you need atomic single-variable operations; use synchronized when you need to protect a block of multiple statements.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // synchronized approach — correct but slower due to lock overhead
+    private int count = 0;
+    public synchronized void increment() { count++; }
+
+    // AtomicInteger — faster, no lock contention
+    private AtomicInteger atomicCount = new AtomicInteger(0);
+    public void increment() { atomicCount.incrementAndGet(); }  // atomic, no lock
+
+    // Other useful methods:
+    atomicCount.compareAndSet(10, 20);  // sets to 20 only if current value is 10
+    int old = atomicCount.getAndAdd(5); // adds 5, returns old value
+
+    // Use AtomicReference for object references:
+    AtomicReference<String> ref = new AtomicReference&lt;&gt;("initial");
+    ref.compareAndSet("initial", "updated");
+  </code></pre>
+</div>
+
+<h3>24. What is the ThreadLocal class? Give a practical use case.</h3>
+ThreadLocal provides each thread with its own independent copy of a variable. Threads don't share ThreadLocal values, so no synchronization is needed. The classic use case is web applications: each request is handled by a different thread, and you want to store the current logged-in user or a database connection specific to that request without passing it through every method call. Always call remove() when done to avoid memory leaks in thread pools (where threads are reused).
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Storing per-thread user context in a web app
+    public class UserContext {
+        private static final ThreadLocal<String> currentUser = new ThreadLocal<>();
+
+        public static void set(String user)   { currentUser.set(user); }
+        public static String get()            { return currentUser.get(); }
+        public static void clear()            { currentUser.remove(); }  // IMPORTANT in thread pools
+    }
+
+    // In a request filter:
+    UserContext.set("alice@example.com");
+
+    // Anywhere in the call stack, same thread:
+    String user = UserContext.get();  // "alice@example.com"
+    auditLog.record("Action by " + user);
+
+    // After request completes:
+    UserContext.clear();
+  </code></pre>
+</div>
+
+<h3>25. What is the CountDownLatch? How is it different from join()?</h3>
+CountDownLatch is a synchronizer that lets one or more threads wait until a set of operations in other threads completes. You initialise it with a count, other threads call countDown() when they finish their piece, and waiting threads call await(). Unlike join(), CountDownLatch works with any number of threads (not just one) and decouples the waiting logic from specific Thread objects — so it works well with thread pools where you don't have direct Thread references.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    int workerCount = 3;
+    CountDownLatch latch = new CountDownLatch(workerCount);
+    ExecutorService pool = Executors.newFixedThreadPool(workerCount);
+
+    for (int i = 0; i < workerCount; i++) {
+        final int id = i;
+        pool.submit(() -> {
+            try {
+                System.out.println("Worker " + id + " processing...");
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                latch.countDown();  // signal this worker is done
+            }
+        });
+    }
+
+    latch.await();  // main thread waits here until count reaches 0
+    System.out.println("All workers done — proceeding");
+    pool.shutdown();
+  </code></pre>
+</div>
+
+<h3>26. What is the difference between ConcurrentHashMap and a synchronized HashMap?</h3>
 Collections.synchronizedMap(new HashMap<>()) wraps every method with a single lock on the whole map — reads and writes from any thread block each other, creating a bottleneck. ConcurrentHashMap uses a more sophisticated approach: it locks only the 'bucket' (segment) being written to, so reads almost never block and concurrent writes to different buckets proceed in parallel. For most concurrent use cases, ConcurrentHashMap gives far better throughput. Note: ConcurrentHashMap does NOT allow null keys or null values.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // synchronizedMap — one lock for everything, all ops block each other
+    Map&lt;String, Integer&gt; syncMap = Collections.synchronizedMap(new HashMap&lt;&gt;());
 
-// synchronizedMap — one lock for everything, all ops block each other
-Map<String, Integer> syncMap = Collections.synchronizedMap(new HashMap<>());
+    // ConcurrentHashMap — bucket-level locking, much better concurrency
+    ConcurrentHashMap&lt;String, Integer&gt; cmap = new ConcurrentHashMap&lt;&gt;();
 
-// ConcurrentHashMap — bucket-level locking, much better concurrency
-ConcurrentHashMap<String, Integer> cmap = new ConcurrentHashMap<>();
+    // Atomic read-modify-write with ConcurrentHashMap:
+    cmap.put("views", 0);
+    cmap.compute("views", (k, v) -> v == null ? 1 : v + 1);  // atomic increment
 
-// Atomic read-modify-write with ConcurrentHashMap:
-cmap.put("views", 0);
-cmap.compute("views", (k, v) -> v == null ? 1 : v + 1);  // atomic increment
+    // merge — also atomic:
+    cmap.merge("views", 1, Integer::sum);
 
-// merge — also atomic:
-cmap.merge("views", 1, Integer::sum);
+    // ConcurrentHashMap also provides atomic putIfAbsent:
+    cmap.putIfAbsent("newKey", 42);
+  </code></pre>
+</div>
 
-// ConcurrentHashMap also provides atomic putIfAbsent:
-cmap.putIfAbsent("newKey", 42);
-Q27
-What is thread starvation? How is it different from a deadlock?
-Thread
+<h3>27. What is thread starvation? How is it different from a deadlock?</h3>
 In a deadlock, threads are permanently blocked waiting for each other — nothing moves. In starvation, threads are NOT blocked but they never get CPU time because other threads always take priority or the scheduler keeps picking the same threads. A low-priority thread starves if high-priority threads constantly keep the CPU busy. Starvation can also happen with unfair locks. Solutions include using fair locks (ReentrantLock with fairness=true), raising thread priority, or using a fair queue-based scheduling strategy.
+<div class="code-block">
+  <span class="code-label">Java</span>
+  <pre><code>
+    // Starvation example: low-priority thread rarely runs
+    Thread highPriority = new Thread(() -> {
+        while(true) { /* hog the CPU */ }
+    });
+    highPriority.setPriority(Thread.MAX_PRIORITY);  // 10
 
-// Starvation example: low-priority thread rarely runs
-Thread highPriority = new Thread(() -> {
-    while(true) { /* hog the CPU */ }
-});
-highPriority.setPriority(Thread.MAX_PRIORITY);  // 10
+    Thread lowPriority = new Thread(() -> {
+        System.out.println("I rarely get a turn...");  // may starve
+    });
+    lowPriority.setPriority(Thread.MIN_PRIORITY);  // 1
 
-Thread lowPriority = new Thread(() -> {
-    System.out.println("I rarely get a turn...");  // may starve
-});
-lowPriority.setPriority(Thread.MIN_PRIORITY);  // 1
-
-// Fix: fair ReentrantLock — threads get the lock in FIFO order
-ReentrantLock fairLock = new ReentrantLock(true); // fairness = true
-// Now threads waiting longest get the lock first — no starvation
+    // Fix: fair ReentrantLock — threads get the lock in FIFO order
+    ReentrantLock fairLock = new ReentrantLock(true); // fairness = true
+    // Now threads waiting longest get the lock first — no starvation
+  </code></pre>
+</div>
